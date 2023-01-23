@@ -5,7 +5,8 @@
 # @version 0.1
 
 NAME = d-lisp
-SRC = src/parser.c \
+SRC = src/main.c \
+	src/parser.c \
 	src/mpc.c
 OBJ = $(SRC:.c=.o)
 

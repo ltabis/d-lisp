@@ -1,15 +1,7 @@
 #include <stdio.h>
-#include "mpc.h"
+#include "pnp.h"
 
 // enable flycheck https://www.reddit.com/r/emacs/comments/audffp/tip_how_to_use_a_stable_and_fast_environment_to/
-
-// Polish Notation Parser.
-typedef struct pnp_s {
-  mpc_parser_t *number;
-  mpc_parser_t *operator;
-  mpc_parser_t *expression;
-  mpc_parser_t *program;
-} pnp_t;
 
 pnp_t init_polish_notation_parser() {
 
@@ -28,7 +20,7 @@ pnp_t init_polish_notation_parser() {
   mpca_lang(MPCA_LANG_DEFAULT,
             "\
 nb : /-?[0-9]+/ ;                  \
-op : '+' | '-' | '*' | '/' ;       \
+op : '+' | '-' | '*' | '/' | '%' ; \
 expr : <nb> | '(' <op> <nb>+ ')' ; \
 dlisp : /^/ <op> <expr>+ /$/ ;     \
 ",
@@ -41,13 +33,18 @@ dlisp : /^/ <op> <expr>+ /$/ ;     \
     return parser;
 }
 
-void cleanup_polish_notation_parser(pnp_t *pnp) {
-  mpc_cleanup(4, pnp->number, pnp->operator, pnp->expression, pnp->program);
+void parse_user_input(pnp_t *pnp, char *input) {
+  mpc_result_t r;
+
+  if (mpc_parse("<stdin>", input, pnp->program, &r)) {
+    mpc_ast_print(r.output);
+    mpc_ast_delete(r.output);
+  } else {
+    mpc_err_print(r.error);
+    mpc_err_delete(r.error);
+  }
 }
 
-int main(int argc, char **argv) {
-  pnp_t pnp = init_polish_notation_parser();
-
-  cleanup_polish_notation_parser(&pnp);
-  return 0;
+void cleanup_polish_notation_parser(pnp_t *pnp) {
+  mpc_cleanup(4, pnp->number, pnp->operator, pnp->expression, pnp->program);
 }
