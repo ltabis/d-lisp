@@ -79,8 +79,7 @@ void parse_user_input(pnp_t *pnp, char *input) {
   mpc_result_t r;
 
   if (mpc_parse("<stdin>", input, pnp->program, &r)) {
-    mpc_ast_print(r.output);
-    printf("evaluation: %ld\n", eval(r.output));
+    printf("%ld\n", eval(r.output));
     mpc_ast_delete(r.output);
   } else {
     mpc_err_print(r.error);
