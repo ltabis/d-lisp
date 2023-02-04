@@ -2,6 +2,7 @@
 #define PNP_H_
 
 #include "mpc.h"
+#include "lval.h"
 
 // Polish Notation Parser.
 typedef struct pnp_s {
