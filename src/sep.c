@@ -42,8 +42,8 @@ lval_t *eval_op(char op, lval_t *lx, lval_t *ly)
   if (ly->error != NONE)
     return ly;
 
-  long x = lx->value;
-  long y = ly->value;
+  long x = lx->number;
+  long y = ly->number;
 
   switch (op)
   {
@@ -132,7 +132,7 @@ void parse_user_input(sep_t *parser, char *input)
 
     if (result->error == NONE)
     {
-      printf("%ld\n", result->value);
+      printf("%ld\n", result->number);
     }
     else
     {

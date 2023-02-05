@@ -5,7 +5,9 @@
 
 typedef enum
 {
-  VALUE,
+  NUMBER,
+  SYMBOL,
+  SEXPR,
   ERROR
 } lval_type_t;
 
@@ -19,7 +21,7 @@ typedef enum
 typedef struct lval_s
 {
   lval_type_t type;
-  long value;
+  long number;
   lval_error_t error;
   char *symbol;
 
@@ -28,8 +30,9 @@ typedef struct lval_s
 } lval_t;
 
 lval_t *lval_num(long);
+lval_t *lval_sym(const char *);
+lval_t *lval_sexpr();
 lval_t *lval_err(lval_error_t);
-lval_t *lval_sym(char *);
 char *interpret_lval_error(lval_error_t);
 
 #endif

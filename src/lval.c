@@ -2,7 +2,7 @@
 
 // TODO: fix memory leaks.
 
-// Return a new valid lval.
+// Return a new valid lval with a number.
 lval_t *lval_num(long value)
 {
     lval_t *lval = malloc(sizeof(lval_t));
@@ -10,10 +10,35 @@ lval_t *lval_num(long value)
     if (!lval)
         return NULL;
 
-    lval->type = VALUE;
-    lval->value = value;
+    lval->type = NUMBER;
+    lval->number = value;
 
-    lval->error = NONE;
+    return lval;
+}
+
+// Return a new valid lval.
+lval_t *lval_sym(const char *symbol)
+{
+    lval_t *lval = malloc(sizeof(lval_t));
+
+    if (!lval)
+        return NULL;
+
+    lval->type = SYMBOL;
+    lval->symbol = malloc(sizeof(char) * strlen(symbol) + 1);
+    strcpy(lval->symbol, symbol);
+
+    return lval;
+}
+
+lval_t *lval_sexpr()
+{
+    lval_t *lval = malloc(sizeof(lval_t));
+
+    if (!lval)
+        return NULL;
+
+    lval->type = SEXPR;
     lval->count = 0;
     lval->cell = NULL;
 
@@ -29,11 +54,7 @@ lval_t *lval_err(lval_error_t error)
         return NULL;
 
     lval->type = ERROR;
-    lval->value = 0;
-
     lval->error = error;
-    lval->count = 0;
-    lval->cell = NULL;
 
     return lval;
 }
