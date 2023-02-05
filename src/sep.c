@@ -48,15 +48,15 @@ lval_t *eval_op(char op, lval_t *lx, lval_t *ly)
   switch (op)
   {
   case '+':
-    return lval_ok(x + y);
+    return lval_num(x + y);
   case '-':
-    return lval_ok(x - y);
+    return lval_num(x - y);
   case '*':
-    return lval_ok(x * y);
+    return lval_num(x * y);
   case '/':
-    return y ? lval_ok(x / y) : lval_err(DIV_BY_ZERO);
+    return y ? lval_num(x / y) : lval_err(DIV_BY_ZERO);
   case '%':
-    return lval_ok(x % y);
+    return lval_num(x % y);
   default:
     return lval_err(UNKNOWN_OP);
   }
@@ -66,7 +66,7 @@ lval_t *eval_expr(mpc_ast_t *expr)
 {
   if (strstr(expr->tag, "nb"))
     // A number, immediately parse from the string.
-    return lval_ok(atoi(expr->contents));
+    return lval_num(atoi(expr->contents));
   else
   {
     // An operator expression, let's parse it.

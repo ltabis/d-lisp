@@ -27,7 +27,7 @@ typedef struct lval_s
   struct lval_s **cell;
 } lval_t;
 
-lval_t *lval_ok(long);
+lval_t *lval_num(long);
 lval_t *lval_err(lval_error_t);
 lval_t *lval_sym(char *);
 char *interpret_lval_error(lval_error_t);

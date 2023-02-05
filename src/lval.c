@@ -1,7 +1,9 @@
 #include "lval.h"
 
+// TODO: fix memory leaks.
+
 // Return a new valid lval.
-lval_t *lval_ok(long value)
+lval_t *lval_num(long value)
 {
     lval_t *lval = malloc(sizeof(lval_t));
 
