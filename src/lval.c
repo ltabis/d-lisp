@@ -59,6 +59,29 @@ lval_t *lval_err(lval_error_t error)
     return lval;
 }
 
+void lval_del(lval_t *lval)
+{
+    switch (lval->type)
+    {
+    case NUMBER:
+        break;
+    case SYMBOL:
+        free(lval->symbol);
+        break;
+    case SEXPR:
+        for (unsigned int i = 0; i < lval->count; ++i)
+        {
+            lval_del(lval->cell[i]);
+        }
+        break;
+
+    default:
+        break;
+    }
+
+    free(lval);
+}
+
 // Takes a lval error and return a human readable string.
 char *interpret_lval_error(lval_error_t error)
 {

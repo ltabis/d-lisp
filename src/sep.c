@@ -139,7 +139,7 @@ void parse_user_input(sep_t *parser, char *input)
       printf("An error occurred during evaluation: %s.\n", interpret_lval_error(result->error));
     }
 
-    free(result);
+    lval_del(result);
     mpc_ast_delete(r.output);
   }
   else

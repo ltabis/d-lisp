@@ -2,6 +2,7 @@
 #define LVAL_H_
 
 #include <stdlib.h>
+#include <string.h>
 
 typedef enum
 {
@@ -33,6 +34,7 @@ lval_t *lval_num(long);
 lval_t *lval_sym(const char *);
 lval_t *lval_sexpr();
 lval_t *lval_err(lval_error_t);
+void lval_del(lval_t *);
 char *interpret_lval_error(lval_error_t);
 
 #endif
