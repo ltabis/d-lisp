@@ -7,7 +7,7 @@
 
 int main()
 {
-    sep_t parser = init_polish_notation_parser();
+    sep_t parser = init_parser();
     char input[INPUT_SIZE] = {0};
     char *rd = NULL;
 
@@ -31,7 +31,7 @@ int main()
         return ERR;
     }
 
-    cleanup_polish_notation_parser(&parser);
+    cleanup_parser(&parser);
 
     return OK;
 }

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "sep.h"
 
-sep_t init_polish_notation_parser()
+sep_t init_parser()
 {
   mpc_parser_t *number = mpc_new("number");
   mpc_parser_t *symbol = mpc_new("symbol");
@@ -149,7 +149,7 @@ void parse_user_input(sep_t *parser, char *input)
   }
 }
 
-void cleanup_polish_notation_parser(sep_t *parser)
+void cleanup_parser(sep_t *parser)
 {
   mpc_cleanup(5, parser->number, parser->symbol, parser->expr, parser->sexpr, parser->program);
 }
