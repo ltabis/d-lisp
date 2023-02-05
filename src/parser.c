@@ -1,14 +1,14 @@
 #include <stdio.h>
-#include "pnp.h"
+#include "sep.h"
 
-pnp_t init_polish_notation_parser()
+sep_t init_polish_notation_parser()
 {
   mpc_parser_t *number = mpc_new("nb");
   mpc_parser_t *operator= mpc_new("op");
   mpc_parser_t *expression = mpc_new("expr");
   mpc_parser_t *program = mpc_new("dlisp");
 
-  pnp_t parser = {
+  sep_t parser = {
       .number = number,
       .operator= operator,
       .expression = expression,
@@ -118,11 +118,11 @@ lval_t eval(mpc_ast_t *ast)
   return result;
 }
 
-void parse_user_input(pnp_t *pnp, char *input)
+void parse_user_input(sep_t *parser, char *input)
 {
   mpc_result_t r;
 
-  if (mpc_parse("<stdin>", input, pnp->program, &r))
+  if (mpc_parse("<stdin>", input, parser->program, &r))
   {
     lval_t result = eval(r.output);
 
@@ -144,7 +144,7 @@ void parse_user_input(pnp_t *pnp, char *input)
   }
 }
 
-void cleanup_polish_notation_parser(pnp_t *pnp)
+void cleanup_polish_notation_parser(sep_t *parser)
 {
-  mpc_cleanup(4, pnp->number, pnp->operator, pnp->expression, pnp->program);
+  mpc_cleanup(4, parser->number, parser->operator, parser->expression, parser->program);
 }

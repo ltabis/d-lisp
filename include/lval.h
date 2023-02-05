@@ -6,6 +6,7 @@ typedef enum
   VALUE,
   ERROR
 } lval_type_t;
+
 typedef enum
 {
   NONE,
