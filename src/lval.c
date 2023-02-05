@@ -1,8 +1,6 @@
 #include "lval.h"
 
-// TODO: fix memory leaks.
-
-// Return a new valid lval with a number.
+// Return a lval with a number.
 lval_t *lval_num(long value)
 {
     lval_t *lval = malloc(sizeof(lval_t));
@@ -16,7 +14,7 @@ lval_t *lval_num(long value)
     return lval;
 }
 
-// Return a new valid lval.
+// Return an lval with the given symbol.
 lval_t *lval_sym(const char *symbol)
 {
     lval_t *lval = malloc(sizeof(lval_t));
@@ -31,6 +29,7 @@ lval_t *lval_sym(const char *symbol)
     return lval;
 }
 
+// Return an lval with an s-expression.
 lval_t *lval_sexpr()
 {
     lval_t *lval = malloc(sizeof(lval_t));
@@ -59,6 +58,7 @@ lval_t *lval_err(lval_error_t error)
     return lval;
 }
 
+// Clean up a lval and all of it's nodes.
 void lval_del(lval_t *lval)
 {
     switch (lval->type)
@@ -73,6 +73,7 @@ void lval_del(lval_t *lval)
         {
             lval_del(lval->cell[i]);
         }
+        free(lval->cell);
         break;
 
     default:
@@ -80,6 +81,53 @@ void lval_del(lval_t *lval)
     }
 
     free(lval);
+}
+
+// Transform a ast value to a number.
+lval_t *lval_read_num(const mpc_ast_t *ast)
+{
+    errno = 0;
+    long number = strtol(ast->contents, NULL, 10);
+
+    return errno == ERANGE ? lval_err(NUM_CONVERSION) : lval_num(number);
+}
+
+lval_t *lval_read(const mpc_ast_t *ast)
+{
+    if (strstr(ast->tag, "number"))
+        return lval_read_num(ast);
+    if (strstr(ast->tag, "symbol"))
+        return lval_sym(ast->contents);
+
+    if (!strcmp(ast->tag, ">") || strstr(ast->tag, "sexpr"))
+    {
+        lval_t *sexpr = lval_sexpr();
+
+        for (unsigned int i = 0; i < ast->children_num; ++i)
+        {
+            if (strcmp(ast->children[i]->contents, "(") == 0)
+                continue;
+            if (strcmp(ast->children[i]->contents, ")") == 0)
+                continue;
+            if (strcmp(ast->children[i]->tag, "regex") == 0)
+                continue;
+
+            sexpr = lval_add(sexpr, lval_read(ast->children[i]));
+        }
+
+        return sexpr;
+    }
+
+    return NULL;
+}
+
+lval_t *lval_add(lval_t *dest, lval_t *other)
+{
+    dest->count++;
+    dest->cell = realloc(dest->cell, sizeof(lval_t *) * dest->count);
+    dest->cell[dest->count - 1] = other;
+
+    return dest;
 }
 
 // Takes a lval error and return a human readable string.
@@ -93,6 +141,8 @@ char *interpret_lval_error(lval_error_t error)
         return "tried to divide by zero";
     case UNKNOWN_OP:
         return "unknown operator";
+    case NUM_CONVERSION:
+        return "failed to convert number";
     default:
         return "unknown error";
     }
