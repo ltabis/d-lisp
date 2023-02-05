@@ -128,18 +128,9 @@ void parse_user_input(sep_t *parser, char *input)
 
   if (mpc_parse("<stdin>", input, parser->program, &r))
   {
-    lval_t *result = eval(r.output);
-
-    if (result->error == NONE)
-    {
-      printf("%ld\n", result->number);
-    }
-    else
-    {
-      printf("An error occurred during evaluation: %s.\n", lval_interpret_error(result->error));
-    }
-
-    lval_del(result);
+    lval_t *lval = lval_eval(lval_read(r.output));
+    lval_println(lval);
+    lval_del(lval);
     mpc_ast_delete(r.output);
   }
   else

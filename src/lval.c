@@ -105,6 +105,124 @@ lval_t *lval_add(lval_t *dest, lval_t *other)
     return dest;
 }
 
+lval_t *lval_pop(lval_t *lval, unsigned int index)
+{
+    if (index <= lval->count - 1)
+    {
+        lval_t *pop = lval->cell[index];
+
+        memmove(&lval->cell[index], &lval->cell[index + 1], sizeof(lval_t *) * lval->count - index - 1);
+        lval->count--;
+        lval->cell = realloc(lval->cell, sizeof(lval_t *) * lval->count);
+
+        return pop;
+    }
+    else
+    {
+        return lval_err(POP_OUT_OF_SCOPE);
+    }
+}
+
+lval_t *lval_take(lval_t *lval, unsigned int index)
+{
+    lval_t *pop = lval_pop(lval, index);
+    lval_del(lval);
+    return pop;
+}
+
+lval_t *lval_eval(lval_t *lval)
+{
+    if (lval->type == SEXPR)
+        return lval_eval_sexpr(lval);
+
+    return lval;
+}
+
+lval_t *lval_eval_sexpr(lval_t *lval)
+{
+
+    for (unsigned int i = 0; i < lval->count; ++i)
+    {
+        lval->cell[i] = lval_eval(lval->cell[i]);
+
+        if (lval->cell[i]->type == ERROR)
+            return lval_take(lval, i);
+    }
+
+    if (lval->count == 0)
+    {
+        return lval;
+    }
+
+    if (lval->count == 1)
+    {
+        return lval_take(lval, 0);
+    }
+
+    lval_t *first = lval_pop(lval, 0);
+
+    if (first->type != SYMBOL)
+    {
+        lval_del(first);
+        lval_del(lval);
+        return lval_err(FIRST_EXPR_NOT_SYMBOL);
+    }
+    else
+    {
+        lval_t *result = builtin_op(lval, first->symbol);
+        lval_del(first);
+        return result;
+    }
+}
+
+lval_t *builtin_op(lval_t *lval, char *symbol)
+{
+    for (unsigned int i = 0; i < lval->count; ++i)
+    {
+        if (lval->cell[i]->type != NUMBER)
+        {
+            lval_del(lval);
+            return lval_err(NOT_A_NUM);
+        }
+    }
+
+    lval_t *result = lval_pop(lval, 0);
+
+    if (lval->count == 0 && strcmp(symbol, "-") == 0)
+    {
+        result->number = -result->number;
+    }
+
+    while (lval->count != 0)
+    {
+        lval_t *next = lval_pop(lval, 0);
+
+        if (strcmp(symbol, "-") == 0)
+            result->number -= next->number;
+        else if (strcmp(symbol, "+") == 0)
+            result->number += next->number;
+        else if (strcmp(symbol, "*") == 0)
+            result->number *= next->number;
+        else if (strcmp(symbol, "/") == 0)
+            if (next->number)
+                result->number /= next->number;
+            else
+            {
+                lval_del(next);
+                lval_del(result);
+                lval_del(lval);
+                return lval_err(DIV_BY_ZERO);
+            }
+        else if (strcmp(symbol, "%") == 0)
+            result->number %= next->number;
+
+        lval_del(next);
+    }
+
+    lval_del(lval);
+    return result;
+}
+
 static void lval_print_sexpr(const lval_t *lval);
 
 static void lval_print(const lval_t *lval)
@@ -190,6 +308,10 @@ char *lval_interpret_error(lval_error_t error)
         return "unknown operator";
     case NUM_CONVERSION:
         return "failed to convert number";
+    case NOT_A_NUM:
+        return "element after a symbol must be a number";
+    case FIRST_EXPR_NOT_SYMBOL:
+        return "the first element of an s-expression must be a symbol";
     default:
         return "unknown error";
     }

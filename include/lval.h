@@ -17,8 +17,11 @@ typedef enum
 typedef enum
 {
   NONE,
+  POP_OUT_OF_SCOPE,
+  FIRST_EXPR_NOT_SYMBOL,
   DIV_BY_ZERO,
   NUM_CONVERSION,
+  NOT_A_NUM,
   UNKNOWN_OP
 } lval_error_t;
 
@@ -41,6 +44,12 @@ lval_t *lval_err(lval_error_t);
 lval_t *lval_read_num(const mpc_ast_t *);
 lval_t *lval_read(const mpc_ast_t *);
 lval_t *lval_add(lval_t *, lval_t *);
+lval_t *lval_pop(lval_t *, unsigned int);
+lval_t *lval_take(lval_t *, unsigned int);
+
+lval_t *lval_eval(lval_t *);
+lval_t *lval_eval_sexpr(lval_t *);
+lval_t *builtin_op(lval_t *, char *);
 
 void lval_println(lval_t *);
 
