@@ -37,11 +37,14 @@ lval_t *lval_num(long);
 lval_t *lval_sym(const char *);
 lval_t *lval_sexpr();
 lval_t *lval_err(lval_error_t);
-void lval_del(lval_t *);
-char *interpret_lval_error(lval_error_t);
 
 lval_t *lval_read_num(const mpc_ast_t *);
 lval_t *lval_read(const mpc_ast_t *);
 lval_t *lval_add(lval_t *, lval_t *);
+
+void lval_println(lval_t *);
+
+void lval_del(lval_t *);
+char *lval_interpret_error(lval_error_t);
 
 #endif

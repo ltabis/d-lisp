@@ -136,7 +136,7 @@ void parse_user_input(sep_t *parser, char *input)
     }
     else
     {
-      printf("An error occurred during evaluation: %s.\n", interpret_lval_error(result->error));
+      printf("An error occurred during evaluation: %s.\n", lval_interpret_error(result->error));
     }
 
     lval_del(result);

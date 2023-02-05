@@ -58,31 +58,6 @@ lval_t *lval_err(lval_error_t error)
     return lval;
 }
 
-// Clean up a lval and all of it's nodes.
-void lval_del(lval_t *lval)
-{
-    switch (lval->type)
-    {
-    case NUMBER:
-        break;
-    case SYMBOL:
-        free(lval->symbol);
-        break;
-    case SEXPR:
-        for (unsigned int i = 0; i < lval->count; ++i)
-        {
-            lval_del(lval->cell[i]);
-        }
-        free(lval->cell);
-        break;
-
-    default:
-        break;
-    }
-
-    free(lval);
-}
-
 // Transform a ast value to a number.
 lval_t *lval_read_num(const mpc_ast_t *ast)
 {
@@ -130,8 +105,80 @@ lval_t *lval_add(lval_t *dest, lval_t *other)
     return dest;
 }
 
+static void lval_print_sexpr(const lval_t *lval);
+
+static void lval_print(const lval_t *lval)
+{
+    switch (lval->type)
+    {
+    case NUMBER:
+        printf("%ld", lval->number);
+        break;
+    case SYMBOL:
+        printf("%s", lval->symbol);
+        break;
+    case ERROR:
+        printf("Error: %s", lval_interpret_error(lval->error));
+        break;
+    case SEXPR:
+        lval_print_sexpr(lval);
+        break;
+
+    default:
+        break;
+    }
+}
+
+static void lval_print_sexpr(const lval_t *lval)
+{
+    putchar('(');
+
+    for (unsigned int i = 0; i < lval->count; ++i)
+    {
+        lval_print(lval->cell[i]);
+
+        if (i != lval->count - 1)
+        {
+            putchar(' ');
+        }
+    }
+
+    putchar(')');
+}
+
+void lval_println(lval_t *lval)
+{
+    lval_print(lval);
+    putchar('\n');
+}
+
+// Clean up a lval and all of it's nodes.
+void lval_del(lval_t *lval)
+{
+    switch (lval->type)
+    {
+    case NUMBER:
+        break;
+    case SYMBOL:
+        free(lval->symbol);
+        break;
+    case SEXPR:
+        for (unsigned int i = 0; i < lval->count; ++i)
+        {
+            lval_del(lval->cell[i]);
+        }
+        free(lval->cell);
+        break;
+
+    default:
+        break;
+    }
+
+    free(lval);
+}
+
 // Takes a lval error and return a human readable string.
-char *interpret_lval_error(lval_error_t error)
+char *lval_interpret_error(lval_error_t error)
 {
     switch (error)
     {
