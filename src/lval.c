@@ -1,21 +1,39 @@
 #include "lval.h"
 
 // Return a new valid lval.
-lval_t new_lval_ok(long value)
+lval_t *lval_ok(long value)
 {
-    return (lval_t){
-        .value = value,
-        .error = NONE,
-    };
+    lval_t *lval = malloc(sizeof(lval_t));
+
+    if (!lval)
+        return NULL;
+
+    lval->type = VALUE;
+    lval->value = value;
+
+    lval->error = NONE;
+    lval->count = 0;
+    lval->cell = NULL;
+
+    return lval;
 }
 
 // Return an lval with an error code.
-lval_t new_lval_err(lval_error_t error)
+lval_t *lval_err(lval_error_t error)
 {
-    return (lval_t){
-        .value = 0,
-        .error = error,
-    };
+    lval_t *lval = malloc(sizeof(lval_t));
+
+    if (!lval)
+        return NULL;
+
+    lval->type = ERROR;
+    lval->value = 0;
+
+    lval->error = error;
+    lval->count = 0;
+    lval->cell = NULL;
+
+    return lval;
 }
 
 // Takes a lval error and return a human readable string.

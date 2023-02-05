@@ -1,6 +1,8 @@
 #ifndef LVAL_H_
 #define LVAL_H_
 
+#include <stdlib.h>
+
 typedef enum
 {
   VALUE,
@@ -14,14 +16,20 @@ typedef enum
   UNKNOWN_OP
 } lval_error_t;
 
-typedef struct
+typedef struct lval_s
 {
+  lval_type_t type;
   long value;
-  int error;
+  lval_error_t error;
+  char *symbol;
+
+  size_t count;
+  struct lval_s **cell;
 } lval_t;
 
-lval_t new_lval_ok(long);
-lval_t new_lval_err(lval_error_t);
+lval_t *lval_ok(long);
+lval_t *lval_err(lval_error_t);
+lval_t *lval_sym(char *);
 char *interpret_lval_error(lval_error_t);
 
 #endif
