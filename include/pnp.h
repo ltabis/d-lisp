@@ -5,7 +5,8 @@
 #include "lval.h"
 
 // Polish Notation Parser.
-typedef struct pnp_s {
+typedef struct pnp_s
+{
   mpc_parser_t *number;
   mpc_parser_t *operator;
   mpc_parser_t *expression;
