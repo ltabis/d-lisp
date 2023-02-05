@@ -8,8 +8,9 @@
 typedef struct sep_s
 {
   mpc_parser_t *number;
-  mpc_parser_t *operator;
-  mpc_parser_t *expression;
+  mpc_parser_t *symbol;
+  mpc_parser_t *expr;
+  mpc_parser_t *sexpr;
   mpc_parser_t *program;
 } sep_t;
 

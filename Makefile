@@ -6,7 +6,7 @@
 
 NAME = d-lisp
 SRC = src/main.c \
-	src/parser.c \
+	src/sep.c \
 	src/lval.c \
 	src/mpc.c
 OBJ = $(SRC:.c=.o)
