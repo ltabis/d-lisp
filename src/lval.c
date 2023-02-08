@@ -81,6 +81,20 @@ lval_t *lval_err(lval_error_t error)
 // | Reading the abstract syntax tree |
 //  ----------------------------------
 
+const char *compound_characters[COMPOUND_CHAR_COUNT] = {"(", ")", "{", "}"};
+
+// Check if the given input is a compound statement character.
+bool is_compound_character(const char *token)
+{
+    for (unsigned int j = 0; j < COMPOUND_CHAR_COUNT; ++j)
+    {
+        if (strcmp(token, compound_characters[j]) == 0)
+            return true;
+    }
+
+    return false;
+}
+
 // Transform a ast value to a number.
 lval_t *lval_read_num(const mpc_ast_t *ast)
 {
@@ -90,33 +104,40 @@ lval_t *lval_read_num(const mpc_ast_t *ast)
     return errno == ERANGE ? lval_err(NUM_CONVERSION) : lval_num(number);
 }
 
+// Read a S or Q expression.
+lval_t *lval_read_expr(const mpc_ast_t *ast, lval_type_t expr_type)
+{
+    if (expr_type != SEXPR && expr_type != QEXPR)
+        return NULL;
+
+    lval_t *expr = expr_type == SEXPR ? lval_sexpr() : lval_qexpr();
+
+    for (unsigned int i = 0; i < ast->children_num; ++i)
+    {
+        if (is_compound_character(ast->children[i]->contents))
+            continue;
+
+        if (strcmp(ast->children[i]->tag, "regex") == 0)
+            continue;
+
+        expr = lval_add(expr, lval_read(ast->children[i]));
+    }
+
+    return expr;
+}
+
 lval_t *lval_read(const mpc_ast_t *ast)
 {
     if (strstr(ast->tag, "number"))
         return lval_read_num(ast);
-    if (strstr(ast->tag, "symbol"))
+    else if (strstr(ast->tag, "symbol"))
         return lval_sym(ast->contents);
-
-    if (!strcmp(ast->tag, ">") || strstr(ast->tag, "sexpr"))
-    {
-        lval_t *sexpr = lval_sexpr();
-
-        for (unsigned int i = 0; i < ast->children_num; ++i)
-        {
-            if (strcmp(ast->children[i]->contents, "(") == 0)
-                continue;
-            if (strcmp(ast->children[i]->contents, ")") == 0)
-                continue;
-            if (strcmp(ast->children[i]->tag, "regex") == 0)
-                continue;
-
-            sexpr = lval_add(sexpr, lval_read(ast->children[i]));
-        }
-
-        return sexpr;
-    }
-
-    return NULL;
+    else if (strstr(ast->tag, "sexpr") || strcmp(ast->tag, ">") == 0)
+        return lval_read_expr(ast, SEXPR);
+    else if (strstr(ast->tag, "qexpr"))
+        return lval_read_expr(ast, QEXPR);
+    else
+        return NULL;
 }
 
 lval_t *lval_add(lval_t *dest, lval_t *other)
@@ -159,15 +180,14 @@ lval_t *lval_take(lval_t *lval, unsigned int index)
 
 lval_t *lval_eval(lval_t *lval)
 {
-    if (lval->type == SEXPR)
-        return lval_eval_sexpr(lval);
+    if (lval->type == SEXPR || lval->type == QEXPR)
+        return lval_eval_expr(lval);
 
     return lval;
 }
 
-lval_t *lval_eval_sexpr(lval_t *lval)
+lval_t *lval_eval_expr(lval_t *lval)
 {
-
     for (unsigned int i = 0; i < lval->count; ++i)
     {
         lval->cell[i] = lval_eval(lval->cell[i]);
@@ -254,7 +274,7 @@ lval_t *builtin_op(lval_t *lval, char *symbol)
 // | print the generated lval tree |
 //  -------------------------------
 
-static void lval_print_sexpr(const lval_t *lval);
+static void lval_print_expr(const lval_t *lval, char begin, char end);
 
 static void lval_print(const lval_t *lval)
 {

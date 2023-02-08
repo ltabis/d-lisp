@@ -4,7 +4,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <stdbool.h>
 #include "mpc.h"
+
+#define COMPOUND_CHAR_COUNT 4
 
 typedef enum
 {
@@ -49,7 +52,7 @@ lval_t *lval_pop(lval_t *, unsigned int);
 lval_t *lval_take(lval_t *, unsigned int);
 
 lval_t *lval_eval(lval_t *);
-lval_t *lval_eval_sexpr(lval_t *);
+lval_t *lval_eval_expr(lval_t *);
 lval_t *builtin_op(lval_t *, char *);
 
 void lval_println(lval_t *);

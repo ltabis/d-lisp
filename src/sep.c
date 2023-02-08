@@ -15,16 +15,17 @@ sep_t init_parser()
       .symbol = symbol,
       .expr = expr,
       .sexpr = sexpr,
+      .qexpr = qexpr,
       .program = program};
 
   mpca_lang(MPCA_LANG_DEFAULT,
-            "                             \
-number : /-?[0-9]+/ ;                     \
-symbol : '+' | '-' | '*' | '/' | '%' ;    \
-sexpr  : '(' <expr>* ')' ;                \
-qexpr  : '{' <expr>* '}' ;                \
-expr   : <number> | <symbol> | <sexpr> ;  \
-dlisp  : /^/ <expr>* /$/ ;                \
+            "                                       \
+number : /-?[0-9]+/ ;                               \
+symbol : '+' | '-' | '*' | '/' | '%' ;              \
+sexpr  : '(' <expr>* ')' ;                          \
+qexpr  : '{' <expr>* '}' ;                          \
+expr   : <number> | <symbol> | <sexpr> | <qexpr> ;  \
+dlisp  : /^/ <expr>* /$/ ;                          \
 ",
             number,
             symbol,
@@ -59,8 +60,8 @@ void cleanup_parser(sep_t *parser)
   mpc_cleanup(6,
               parser->number,
               parser->symbol,
-              parser->expr,
               parser->sexpr,
               parser->qexpr,
+              parser->expr,
               parser->program);
 }
