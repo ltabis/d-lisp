@@ -1,5 +1,9 @@
 #include "lval.h"
 
+//  --------------
+// | Constructors |
+//  --------------
+
 // Return a lval with a number.
 lval_t *lval_num(long value)
 {
@@ -14,7 +18,7 @@ lval_t *lval_num(long value)
     return lval;
 }
 
-// Return an lval with the given symbol.
+// Return an lval with a given symbol.
 lval_t *lval_sym(const char *symbol)
 {
     lval_t *lval = malloc(sizeof(lval_t));
@@ -72,6 +76,10 @@ lval_t *lval_err(lval_error_t error)
 
     return lval;
 }
+
+//  ----------------------------------
+// | Reading the abstract syntax tree |
+//  ----------------------------------
 
 // Transform a ast value to a number.
 lval_t *lval_read_num(const mpc_ast_t *ast)
@@ -144,6 +152,10 @@ lval_t *lval_take(lval_t *lval, unsigned int index)
     lval_del(lval);
     return pop;
 }
+
+//  ----------------------
+// | evaluate expressions |
+//  ----------------------
 
 lval_t *lval_eval(lval_t *lval)
 {
@@ -238,6 +250,10 @@ lval_t *builtin_op(lval_t *lval, char *symbol)
     return result;
 }
 
+//  -------------------------------
+// | print the generated lval tree |
+//  -------------------------------
+
 static void lval_print_sexpr(const lval_t *lval);
 
 static void lval_print(const lval_t *lval)
@@ -288,6 +304,10 @@ void lval_println(lval_t *lval)
     putchar('\n');
 }
 
+//  ----------------------------
+// | Cleanup and error handling |
+//  ----------------------------
+
 // Clean up a lval and all of it's nodes.
 void lval_del(lval_t *lval)
 {
@@ -299,6 +319,7 @@ void lval_del(lval_t *lval)
         free(lval->symbol);
         break;
     case SEXPR:
+    case QEXPR:
         for (unsigned int i = 0; i < lval->count; ++i)
         {
             lval_del(lval->cell[i]);
@@ -318,6 +339,7 @@ char *lval_interpret_error(lval_error_t error)
 {
     switch (error)
     {
+    // TODO: should be removed.
     case NONE:
         return "there where no error";
     case DIV_BY_ZERO:
