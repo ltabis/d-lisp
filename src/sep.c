@@ -7,6 +7,7 @@ sep_t init_parser()
   mpc_parser_t *symbol = mpc_new("symbol");
   mpc_parser_t *expr = mpc_new("expr");
   mpc_parser_t *sexpr = mpc_new("sexpr");
+  mpc_parser_t *qexpr = mpc_new("qexpr");
   mpc_parser_t *program = mpc_new("dlisp");
 
   sep_t parser = {
@@ -21,12 +22,14 @@ sep_t init_parser()
 number : /-?[0-9]+/ ;                     \
 symbol : '+' | '-' | '*' | '/' | '%' ;    \
 sexpr  : '(' <expr>* ')' ;                \
+qexpr  : '{' <expr>* '}' ;                \
 expr   : <number> | <symbol> | <sexpr> ;  \
 dlisp  : /^/ <expr>* /$/ ;                \
 ",
             number,
             symbol,
             sexpr,
+            qexpr,
             expr,
             program);
 
@@ -53,5 +56,11 @@ void parse_user_input(sep_t *parser, char *input)
 
 void cleanup_parser(sep_t *parser)
 {
-  mpc_cleanup(5, parser->number, parser->symbol, parser->expr, parser->sexpr, parser->program);
+  mpc_cleanup(6,
+              parser->number,
+              parser->symbol,
+              parser->expr,
+              parser->sexpr,
+              parser->qexpr,
+              parser->program);
 }

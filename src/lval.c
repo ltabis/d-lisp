@@ -44,6 +44,21 @@ lval_t *lval_sexpr()
     return lval;
 }
 
+// Return an lval with a q-expression.
+lval_t *lval_qexpr()
+{
+    lval_t *lval = malloc(sizeof(lval_t));
+
+    if (!lval)
+        return NULL;
+
+    lval->type = QEXPR;
+    lval->count = 0;
+    lval->cell = NULL;
+
+    return lval;
+}
+
 // Return an lval with an error code.
 lval_t *lval_err(lval_error_t error)
 {
@@ -239,7 +254,10 @@ static void lval_print(const lval_t *lval)
         printf("Error: %s", lval_interpret_error(lval->error));
         break;
     case SEXPR:
-        lval_print_sexpr(lval);
+        lval_print_expr(lval, '(', ')');
+        break;
+    case QEXPR:
+        lval_print_expr(lval, '{', '}');
         break;
 
     default:
@@ -247,9 +265,9 @@ static void lval_print(const lval_t *lval)
     }
 }
 
-static void lval_print_sexpr(const lval_t *lval)
+static void lval_print_expr(const lval_t *lval, char begin, char end)
 {
-    putchar('(');
+    putchar(begin);
 
     for (unsigned int i = 0; i < lval->count; ++i)
     {
@@ -261,7 +279,7 @@ static void lval_print_sexpr(const lval_t *lval)
         }
     }
 
-    putchar(')');
+    putchar(end);
 }
 
 void lval_println(lval_t *lval)

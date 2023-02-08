@@ -11,6 +11,7 @@ typedef enum
   NUMBER,
   SYMBOL,
   SEXPR,
+  QEXPR,
   ERROR
 } lval_type_t;
 
