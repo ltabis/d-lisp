@@ -3,6 +3,7 @@
     "dlisp",
     "mpca",
     "MPCA",
+    "qexpr",
     "sexpr"
-  ]
+  ],
 }
