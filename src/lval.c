@@ -180,7 +180,7 @@ lval_t *lval_take(lval_t *lval, unsigned int index)
 
 lval_t *lval_eval(lval_t *lval)
 {
-    if (lval->type == SEXPR || lval->type == QEXPR)
+    if (lval->type == SEXPR)
         return lval_eval_expr(lval);
 
     return lval;
