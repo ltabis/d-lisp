@@ -1,9 +1,21 @@
 {
-  "cSpell.words": [
-    "dlisp",
-    "mpca",
-    "MPCA",
-    "qexpr",
-    "sexpr"
-  ],
+  "cSpell.words": ["dlisp", "mpca", "MPCA", "qexpr", "sexpr"],
+  "files.associations": {
+    "*.json.liquid": "json",
+    "*.yaml.liquid": "yaml",
+    "*.md.liquid": "markdown",
+    "*.js.liquid": "liquid-javascript",
+    "*.css.liquid": "liquid-css",
+    "*.scss.liquid": "liquid-scss",
+    "*.vsl": "rhai",
+    "*.tcc": "cpp",
+    "system_error": "cpp",
+    "random": "cpp",
+    "limits": "cpp",
+    "new": "cpp",
+    "ostream": "cpp",
+    "stdexcept": "cpp",
+    "streambuf": "cpp",
+    "functional": "cpp"
+  }
 }
