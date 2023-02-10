@@ -64,7 +64,7 @@ lval_t *lval_qexpr()
 }
 
 // Return an lval with an error code.
-lval_t *lval_err(lval_error_t error)
+lval_t *lval_err(const char *msg)
 {
     lval_t *lval = malloc(sizeof(lval_t));
 
@@ -72,7 +72,7 @@ lval_t *lval_err(lval_error_t error)
         return NULL;
 
     lval->type = ERROR;
-    lval->error = error;
+    lval->error = strdup(msg);
 
     return lval;
 }
@@ -101,7 +101,7 @@ lval_t *lval_read_num(const mpc_ast_t *ast)
     errno = 0;
     long number = strtol(ast->contents, NULL, 10);
 
-    return errno == ERANGE ? lval_err(NUM_CONVERSION) : lval_num(number);
+    return errno == ERANGE ? lval_err("Expression is not a number") : lval_num(number);
 }
 
 // Read a S or Q expression.
@@ -149,6 +149,11 @@ lval_t *lval_add(lval_t *dest, lval_t *other)
     return dest;
 }
 
+/// @brief Pops an lval from an expression.
+/// This function reallocates the lval from which the element has been popped.
+/// @param lval lval to pop an element from.
+/// @param index which lval to pop.
+/// @return the popped lval.
 lval_t *lval_pop(lval_t *lval, unsigned int index)
 {
     if (index <= lval->count - 1)
@@ -163,7 +168,7 @@ lval_t *lval_pop(lval_t *lval, unsigned int index)
     }
     else
     {
-        return lval_err(POP_OUT_OF_SCOPE);
+        return lval_err("Trying to pop a lval by index, but index is out of scope");
     }
 }
 
@@ -212,7 +217,7 @@ lval_t *lval_eval_expr(lval_t *lval)
     {
         lval_del(first);
         lval_del(lval);
-        return lval_err(FIRST_EXPR_NOT_SYMBOL);
+        return lval_err("The first element of a S-Expression must be a symbol");
     }
     else
     {
@@ -229,7 +234,7 @@ lval_t *builtin_op(lval_t *lval, char *symbol)
         if (lval->cell[i]->type != NUMBER)
         {
             lval_del(lval);
-            return lval_err(NOT_A_NUM);
+            return lval_err("Numerical operators can only be applied to number");
         }
     }
 
@@ -258,7 +263,7 @@ lval_t *builtin_op(lval_t *lval, char *symbol)
                 lval_del(next);
                 lval_del(result);
                 lval_del(lval);
-                return lval_err(DIV_BY_ZERO);
+                return lval_err("Cannot divide by zero");
             }
         else if (strcmp(symbol, "%") == 0)
             result->number %= next->number;
@@ -268,6 +273,54 @@ lval_t *builtin_op(lval_t *lval, char *symbol)
 
     lval_del(lval);
     return result;
+}
+
+/// @brief get the head of a qexpr.
+/// @param lval
+/// @return the popped head from an expression, removes the tail.
+lval_t *builtin_head(lval_t *lval)
+{
+    if (lval->count != 1 || lval->cell[0]->type != QEXPR)
+    {
+        lval_del(lval);
+        return lval_err("`head` symbol can only be applied to one Q-Expression");
+    }
+
+    if (lval->cell[0]->count < 1)
+    {
+        lval_del(lval);
+        return lval_err("`head` symbol cannot be applied to an empty Q-Expression");
+    }
+
+    lval_t *q = lval_take(lval->cell[0], 0);
+
+    while (q->count != 1)
+    {
+        lval_del(lval_pop(q, 1));
+    }
+
+    return q;
+}
+
+lval_t *builtin_tail(lval_t *lval)
+{
+    if (lval->count != 1 || lval->cell[0]->type != QEXPR)
+    {
+        lval_del(lval);
+        return lval_err("`tail` symbol can only be applied to one Q-Expression");
+    }
+
+    if (lval->cell[0]->count < 1)
+    {
+        lval_del(lval);
+        return lval_err("`tail` symbol cannot be applied to an empty Q-Expression");
+    }
+
+    lval_t *q = lval_take(lval->cell[0], 0);
+
+    lval_del(lval_pop(q, 0));
+
+    return q;
 }
 
 //  -------------------------------
@@ -352,27 +405,4 @@ void lval_del(lval_t *lval)
     }
 
     free(lval);
-}
-
-// Takes a lval error and return a human readable string.
-char *lval_interpret_error(lval_error_t error)
-{
-    switch (error)
-    {
-    // TODO: should be removed.
-    case NONE:
-        return "there where no error";
-    case DIV_BY_ZERO:
-        return "tried to divide by zero";
-    case UNKNOWN_OP:
-        return "unknown operator";
-    case NUM_CONVERSION:
-        return "failed to convert number";
-    case NOT_A_NUM:
-        return "element after a symbol must be a number";
-    case FIRST_EXPR_NOT_SYMBOL:
-        return "the first element of an s-expression must be a symbol";
-    default:
-        return "unknown error";
-    }
 }

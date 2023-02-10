@@ -18,22 +18,11 @@ typedef enum
   ERROR
 } lval_type_t;
 
-typedef enum
-{
-  NONE,
-  POP_OUT_OF_SCOPE,
-  FIRST_EXPR_NOT_SYMBOL,
-  DIV_BY_ZERO,
-  NUM_CONVERSION,
-  NOT_A_NUM,
-  UNKNOWN_OP
-} lval_error_t;
-
 typedef struct lval_s
 {
   lval_type_t type;
   long number;
-  lval_error_t error;
+  char *error;
   char *symbol;
 
   size_t count;
@@ -54,10 +43,11 @@ lval_t *lval_take(lval_t *, unsigned int);
 lval_t *lval_eval(lval_t *);
 lval_t *lval_eval_expr(lval_t *);
 lval_t *builtin_op(lval_t *, char *);
+lval_t *builtin_head(lval_t *);
+lval_t *builtin_tail(lval_t *);
 
 void lval_println(lval_t *);
 
 void lval_del(lval_t *);
-char *lval_interpret_error(lval_error_t);
 
 #endif
