@@ -340,7 +340,7 @@ static void lval_print(const lval_t *lval)
         printf("%s", lval->symbol);
         break;
     case ERROR:
-        printf("Error: %s", lval_interpret_error(lval->error));
+        printf("Error: %s", lval->error);
         break;
     case SEXPR:
         lval_print_expr(lval, '(', ')');

@@ -32,7 +32,7 @@ typedef struct lval_s
 lval_t *lval_num(long);
 lval_t *lval_sym(const char *);
 lval_t *lval_sexpr();
-lval_t *lval_err(lval_error_t);
+lval_t *lval_err(const char *);
 
 lval_t *lval_read_num(const mpc_ast_t *);
 lval_t *lval_read(const mpc_ast_t *);
