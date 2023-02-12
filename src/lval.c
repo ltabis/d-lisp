@@ -222,23 +222,24 @@ lval_t *lval_eval_expr(lval_t *lval)
     }
     else
     {
-        lval_t *result = NULL;
-
         if (strcmp(first->symbol, "head") == 0)
-            result = builtin_head(lval);
+            return builtin_head(lval);
         else if (strcmp(first->symbol, "tail") == 0)
-            result = builtin_tail(lval);
+            return builtin_tail(lval);
         else if (strcmp(first->symbol, "list") == 0)
-            result = builtin_list(lval);
+            return builtin_list(lval);
         else if (strcmp(first->symbol, "eval") == 0)
-            result = builtin_eval(lval);
+            return builtin_eval(lval);
         else if (strcmp(first->symbol, "join") == 0)
-            result = builtin_join(lval);
-        else
-            result = builtin_op(lval, first->symbol);
+            return builtin_join(lval);
+        else if (strstr("-+/*%", first->symbol))
+            return builtin_op(lval, first->symbol);
 
         lval_del(first);
-        return result;
+        // FIXME: Will never branch here because mpc only parses the symbols
+        //        defined above. I guess i'll let this here in case I implement
+        //        my own parser.
+        return lval_err("unknown symbol");
     }
 }
 
