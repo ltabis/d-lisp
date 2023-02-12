@@ -9,6 +9,9 @@
 
 #define COMPOUND_CHAR_COUNT 4
 
+#define LASSERT(args, cond, err) \
+  if (!(cond)) { lval_del(args); return lval_err(err); }
+
 typedef enum
 {
   NUMBER,

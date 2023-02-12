@@ -1,5 +1,12 @@
 {
-  "cSpell.words": ["dlisp", "mpca", "MPCA", "qexpr", "sexpr"],
+  "cSpell.words": [
+    "dlisp",
+    "LASSERT",
+    "mpca",
+    "MPCA",
+    "qexpr",
+    "sexpr"
+  ],
   "files.associations": {
     "*.json.liquid": "json",
     "*.yaml.liquid": "yaml",

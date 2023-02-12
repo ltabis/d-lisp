@@ -289,17 +289,8 @@ lval_t *builtin_op(lval_t *lval, char *symbol)
 /// @return the popped head from an expression, removes the tail.
 lval_t *builtin_head(lval_t *lval)
 {
-    if (lval->count != 1 || lval->cell[0]->type != QEXPR)
-    {
-        lval_del(lval);
-        return lval_err("`head` symbol can only be applied to one Q-Expression");
-    }
-
-    if (lval->cell[0]->count < 1)
-    {
-        lval_del(lval);
-        return lval_err("`head` symbol cannot be applied to an empty Q-Expression");
-    }
+    LASSERT(lval, lval->count == 1 && lval->cell[0]->type == QEXPR, "`head` symbol can only be applied to one Q-Expression");
+    LASSERT(lval, lval->cell[0]->count >= 1, "`head` symbol cannot be applied to an empty Q-Expression");
 
     lval_t *q = lval_take(lval, 0);
 
@@ -313,17 +304,8 @@ lval_t *builtin_head(lval_t *lval)
 
 lval_t *builtin_tail(lval_t *lval)
 {
-    if (lval->count != 1 || lval->cell[0]->type != QEXPR)
-    {
-        lval_del(lval);
-        return lval_err("`tail` symbol can only be applied to one Q-Expression");
-    }
-
-    if (lval->cell[0]->count < 1)
-    {
-        lval_del(lval);
-        return lval_err("`tail` symbol cannot be applied to an empty Q-Expression");
-    }
+    LASSERT(lval, lval->count == 1 && lval->cell[0]->type == QEXPR, "`tail` symbol can only be applied to one Q-Expression");
+    LASSERT(lval, lval->cell[0]->count >= 1, "`tail` symbol cannot be applied to an empty Q-Expression");
 
     lval_t *q = lval_take(lval, 0);
 
