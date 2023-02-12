@@ -232,6 +232,8 @@ lval_t *lval_eval_expr(lval_t *lval)
             result = builtin_list(lval);
         else if (strcmp(first->symbol, "eval") == 0)
             result = builtin_eval(lval);
+        else if (strcmp(first->symbol, "join") == 0)
+            result = builtin_join(lval);
         else
             result = builtin_op(lval, first->symbol);
 
@@ -240,6 +242,9 @@ lval_t *lval_eval_expr(lval_t *lval)
     }
 }
 
+/// @brief evaluate an math operator on a list of numbers.
+/// @param lval
+/// @return the result of the evaluation.
 lval_t *builtin_op(lval_t *lval, char *symbol)
 {
     for (unsigned int i = 0; i < lval->count; ++i)
@@ -344,7 +349,39 @@ lval_t *builtin_eval(lval_t *lval)
     return lval_eval(q);
 }
 
+/// @brief join n-qexpr together.
+/// @param lval
+/// @return the merged qexpr.
+lval_t *builtin_join(lval_t *lval)
+{
+    unsigned int req_space = 0;
 
+    for (unsigned int i = 0; i < lval->count; ++i)
+    {
+        LASSERT(lval, lval->cell[i]->type == QEXPR, "`join` symbol can only be applied to Q-Expressions")
+        req_space += lval->cell[i]->count;
+    }
+
+    lval_t *join = lval_qexpr();
+
+    join->count = req_space;
+    join->cell = malloc(sizeof(lval_t *) * req_space);
+
+    for (unsigned int i = 0; lval->count;)
+    {
+        lval_t *next = lval_pop(lval, 0);
+
+        while (next->count) {
+            join->cell[i] = lval_pop(next, 0);
+            i++;
+        }
+
+        lval_del(next);
+    }
+
+    lval_del(lval);
+    return join;
+}
 //  -------------------------------
 // | print the generated lval tree |
 //  -------------------------------

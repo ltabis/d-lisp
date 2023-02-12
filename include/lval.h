@@ -50,6 +50,7 @@ lval_t *builtin_head(lval_t *);
 lval_t *builtin_tail(lval_t *);
 lval_t *builtin_list(lval_t *);
 lval_t *builtin_eval(lval_t *);
+lval_t *builtin_join(lval_t *);
 
 void lval_println(lval_t *);
 
