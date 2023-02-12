@@ -228,6 +228,10 @@ lval_t *lval_eval_expr(lval_t *lval)
             result = builtin_head(lval);
         else if (strcmp(first->symbol, "tail") == 0)
             result = builtin_tail(lval);
+        else if (strcmp(first->symbol, "list") == 0)
+            result = builtin_list(lval);
+        else if (strcmp(first->symbol, "eval") == 0)
+            result = builtin_eval(lval);
         else
             result = builtin_op(lval, first->symbol);
 
@@ -284,9 +288,9 @@ lval_t *builtin_op(lval_t *lval, char *symbol)
     return result;
 }
 
-/// @brief get the head of a qexpr.
+/// @brief get the head of a qexpr and deletes the tail.
 /// @param lval
-/// @return the popped head from an expression, removes the tail.
+/// @return the popped head from a qexpr.
 lval_t *builtin_head(lval_t *lval)
 {
     LASSERT(lval, lval->count == 1 && lval->cell[0]->type == QEXPR, "`head` symbol can only be applied to one Q-Expression");
@@ -302,6 +306,9 @@ lval_t *builtin_head(lval_t *lval)
     return q;
 }
 
+/// @brief get the tail of a qexpr and deletes the head.
+/// @param lval
+/// @return the tail of a qexpr.
 lval_t *builtin_tail(lval_t *lval)
 {
     LASSERT(lval, lval->count == 1 && lval->cell[0]->type == QEXPR, "`tail` symbol can only be applied to one Q-Expression");
@@ -313,6 +320,30 @@ lval_t *builtin_tail(lval_t *lval)
 
     return q;
 }
+
+/// @brief Transform a sexpr into a qexpr.
+/// @param lval
+/// @return a qexpr.
+lval_t *builtin_list(lval_t *lval)
+{
+    LASSERT(lval, lval->type == SEXPR, "`list` symbol can only be applied to a S-Expression");
+
+    lval->type = QEXPR;
+    return lval;
+}
+
+/// @brief Evaluate a qexpr by transforming it into a sexpr.
+/// @param lval
+/// @return the result of the evaluation.
+lval_t *builtin_eval(lval_t *lval)
+{
+    LASSERT(lval, lval->count == 1 && lval->cell[0]->type == QEXPR, "`eval` symbol can only be applied to a Q-Expression");
+
+    lval_t *q = lval_take(lval, 0);
+    q->type = SEXPR;
+    return lval_eval(q);
+}
+
 
 //  -------------------------------
 // | print the generated lval tree |
