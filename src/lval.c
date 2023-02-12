@@ -160,7 +160,8 @@ lval_t *lval_pop(lval_t *lval, unsigned int index)
     {
         lval_t *pop = lval->cell[index];
 
-        memmove(&lval->cell[index], &lval->cell[index + 1], sizeof(lval_t *) * lval->count - index - 1);
+        // Move pointers to the start of the given index to remove the desired element.
+        memmove(&lval->cell[index], &lval->cell[index + 1], sizeof(lval_t *) * (lval->count - index - 1));
         lval->count--;
         lval->cell = realloc(lval->cell, sizeof(lval_t *) * lval->count);
 
@@ -168,7 +169,7 @@ lval_t *lval_pop(lval_t *lval, unsigned int index)
     }
     else
     {
-        return lval_err("Trying to pop a lval by index, but index is out of scope");
+        return lval_err("Trying to pop a lval using an out of scope index");
     }
 }
 
@@ -221,7 +222,15 @@ lval_t *lval_eval_expr(lval_t *lval)
     }
     else
     {
-        lval_t *result = builtin_op(lval, first->symbol);
+        lval_t *result = NULL;
+
+        if (strcmp(first->symbol, "head") == 0)
+            result = builtin_head(lval);
+        else if (strcmp(first->symbol, "tail") == 0)
+            result = builtin_tail(lval);
+        else
+            result = builtin_op(lval, first->symbol);
+
         lval_del(first);
         return result;
     }
@@ -292,9 +301,9 @@ lval_t *builtin_head(lval_t *lval)
         return lval_err("`head` symbol cannot be applied to an empty Q-Expression");
     }
 
-    lval_t *q = lval_take(lval->cell[0], 0);
+    lval_t *q = lval_take(lval, 0);
 
-    while (q->count != 1)
+    while (q->count > 1)
     {
         lval_del(lval_pop(q, 1));
     }
@@ -316,7 +325,7 @@ lval_t *builtin_tail(lval_t *lval)
         return lval_err("`tail` symbol cannot be applied to an empty Q-Expression");
     }
 
-    lval_t *q = lval_take(lval->cell[0], 0);
+    lval_t *q = lval_take(lval, 0);
 
     lval_del(lval_pop(q, 0));
 
