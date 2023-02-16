@@ -54,6 +54,9 @@ lval_t *lval_sym(const char *);
 lval_t *lval_sexpr();
 lval_t *lval_err(const char *);
 
+lval_t *lenv_get(lenv_t *, const char *);
+void lenv_push(lenv_t *, lval_t *, lval_t *);
+
 lval_t *lval_read_num(const mpc_ast_t *);
 lval_t *lval_read(const mpc_ast_t *);
 lval_t *lval_add(lval_t *, lval_t *);

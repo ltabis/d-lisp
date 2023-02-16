@@ -107,6 +107,40 @@ lval_t *lval_err(const char *msg)
     return lval;
 }
 
+// Clone a copy of a lval matching a symbol name.
+// Return an error if the symbol could not be found.
+lval_t *lenv_get(lenv_t *env, const char *sym)
+{
+    for (size_t i = 0; i < env->count; i++) {
+        if (strcmp(sym, env->syms[i]) == 0) {
+            return lval_clone(env->vals[i]);
+        }
+    }
+
+    return lval_err("symbol not found");
+}
+
+// Push a new lval to the env, replace an existing value
+// if the key is already part of the environment.
+void lenv_push(lenv_t *env, lval_t *key, lval_t *value)
+{
+    for (size_t i = 0; i < env->count; ++i) {
+        if (strcmp(key->symbol, env->syms[i]) == 0) {
+            lval_del(env->vals[i]);
+            env->vals[i] = value;
+            return;
+        }
+    }
+
+    env->count++;
+    env->syms = realloc(env->syms, sizeof(lval_t *) * env->count);
+    env->vals = realloc(env->vals, sizeof(char *) * env->count);
+
+    env->syms[env->count - 1] = strdup(key->symbol);
+    env->vals[env->count - 1] = lval_clone(value);
+}
+
+
 //  ----------------------------------
 // | Reading the abstract syntax tree |
 //  ----------------------------------
