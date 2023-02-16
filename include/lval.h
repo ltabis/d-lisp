@@ -27,6 +27,7 @@ typedef enum
   ERROR,
 } lval_type_t;
 
+// Used to store any d-lisp value;
 typedef struct lval_s
 {
   lval_type_t type;
@@ -40,6 +41,14 @@ typedef struct lval_s
   struct lval_s **cell;
 } lval_t;
 
+// Used to keep track of the variables names and their associated lval.
+struct lenv_s {
+  size_t count;
+  char **syms;
+  lval_t **vals;
+};
+
+lenv_t *lenv_new();
 lval_t *lval_num(long);
 lval_t *lval_sym(const char *);
 lval_t *lval_sexpr();
@@ -64,5 +73,6 @@ void lval_println(lval_t *);
 
 lval_t *lval_clone(lval_t *);
 void lval_del(lval_t *);
+void lenv_del(lenv_t *);
 
 #endif

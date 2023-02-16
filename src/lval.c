@@ -4,6 +4,21 @@
 // | Constructors |
 //  --------------
 
+// Return a new environment.
+lenv_t *lenv_new()
+{
+    lenv_t *env = malloc(sizeof(lenv_t));
+
+    if (!env)
+        return NULL;
+
+    env->count = 0;
+    env->syms = NULL;
+    env->vals = NULL;
+
+    return env;
+}
+
 // Return a lval with a number.
 lval_t *lval_num(long value)
 {
@@ -489,6 +504,19 @@ lval_t *lval_clone(lval_t *lval)
     }
 
     return new;
+}
+
+// Clean up the environment.
+void lenv_del(lenv_t *env)
+{
+    for (size_t i = 0; i < env->count; ++i) {
+        free(env->syms[i]);
+        lval_del(env->vals[i]);
+    }
+
+    free(env->syms);
+    free(env->vals);
+    free(env);
 }
 
 // Clean up a lval and all of it's nodes.
