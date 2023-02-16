@@ -34,7 +34,7 @@ typedef struct lval_s
   long number;
   char *error;
   char *symbol;
-  lbuiltin fun;
+  lbuiltin function;
 
   size_t count;
   struct lval_s **cell;
@@ -62,6 +62,7 @@ lval_t *builtin_join(lval_t *);
 
 void lval_println(lval_t *);
 
+lval_t *lval_clone(lval_t *);
 void lval_del(lval_t *);
 
 #endif

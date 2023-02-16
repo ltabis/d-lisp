@@ -64,7 +64,7 @@ lval_t *lval_qexpr()
 }
 
 // Return an lval with a function pointer.
-lval_t *lval_fun(lbuiltin fun)
+lval_t *lval_fun(lbuiltin function)
 {
     lval_t *lval = malloc(sizeof(lval_t));
 
@@ -72,7 +72,7 @@ lval_t *lval_fun(lbuiltin fun)
         return NULL;
 
     lval->type = FUN;
-    lval->fun = fun;
+    lval->function = function;
 
     return lval;
 }
@@ -455,9 +455,41 @@ void lval_println(lval_t *lval)
     putchar('\n');
 }
 
-//  ----------------------------
-// | Cleanup and error handling |
-//  ----------------------------
+//  -------------------
+// | lval manipulation |
+//  -------------------
+
+lval_t *lval_clone(lval_t *lval)
+{
+    lval_t *new = malloc(sizeof(lval_t));
+
+    if (!new) return NULL;
+
+    new->type = lval->type;
+
+    switch (new->type) {
+        case NUMBER: new->number = lval->number; break;
+        case FUN: new->function = lval->function; break;
+        case SYMBOL: new->symbol = strdup(lval->symbol); break;
+        case ERROR: new->error = strdup(lval->error); break;
+        case SEXPR:
+        case QEXPR:
+            new->count = lval->count;
+            new->cell = malloc(sizeof(lval_t *) * new->count);
+
+            for (unsigned int i = 0; i < new->count; ++i)
+            {
+                new->cell[i] = lval_clone(lval->cell[i]);
+            }
+            break;
+        default:
+            // FIXME: Should crash the program because all enum values should be handled.
+            return NULL;
+            break;
+    }
+
+    return new;
+}
 
 // Clean up a lval and all of it's nodes.
 void lval_del(lval_t *lval)
@@ -479,6 +511,8 @@ void lval_del(lval_t *lval)
         break;
     case FUN:
     default:
+        // FIXME: Should crash the program because all enum values should be handled.
+        return;
         break;
     }
 
