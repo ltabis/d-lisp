@@ -63,6 +63,21 @@ lval_t *lval_qexpr()
     return lval;
 }
 
+// Return an lval with a function pointer.
+lval_t *lval_fun(lbuiltin fun)
+{
+    lval_t *lval = malloc(sizeof(lval_t));
+
+    if (!lval)
+        return NULL;
+
+    lval->type = FUN;
+    lval->fun = fun;
+
+    return lval;
+}
+
+
 // Return an lval with an error code.
 lval_t *lval_err(const char *msg)
 {
@@ -408,6 +423,9 @@ static void lval_print(const lval_t *lval)
     case QEXPR:
         lval_print_expr(lval, '{', '}');
         break;
+    case FUN:
+        puts("<function>");
+        break;
 
     default:
         break;
@@ -459,7 +477,7 @@ void lval_del(lval_t *lval)
         }
         free(lval->cell);
         break;
-
+    case FUN:
     default:
         break;
     }

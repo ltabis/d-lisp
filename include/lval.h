@@ -12,21 +12,29 @@
 #define LASSERT(args, cond, err) \
   if (!(cond)) { lval_del(args); return lval_err(err); }
 
+typedef struct lval_s lval_t;
+typedef struct lenv_s lenv_t;
+
+typedef lval_t *(*lbuiltin)(lenv_t *, lval_t *);
+
 typedef enum
 {
   NUMBER,
   SYMBOL,
+  FUN,
   SEXPR,
   QEXPR,
-  ERROR
+  ERROR,
 } lval_type_t;
 
 typedef struct lval_s
 {
   lval_type_t type;
+
   long number;
   char *error;
   char *symbol;
+  lbuiltin fun;
 
   size_t count;
   struct lval_s **cell;

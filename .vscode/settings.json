@@ -2,6 +2,8 @@
   "cSpell.words": [
     "dlisp",
     "LASSERT",
+    "lbuiltin",
+    "lenv",
     "mpca",
     "MPCA",
     "qexpr",
