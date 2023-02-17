@@ -302,7 +302,7 @@ lval_t *lval_eval_sexpr(lenv_t *env, lval_t *lval)
 /// @brief evaluate an math operator on a list of numbers.
 /// @param lval
 /// @return the result of the evaluation.
-lval_t *builtin_op(lval_t *lval, char *symbol)
+lval_t *builtin_op(lenv_t *env, lval_t *lval, char *symbol)
 {
     for (unsigned int i = 0; i < lval->count; ++i)
     {
@@ -353,7 +353,7 @@ lval_t *builtin_op(lval_t *lval, char *symbol)
 /// @brief get the head of a qexpr and deletes the tail.
 /// @param lval
 /// @return the popped head from a qexpr.
-lval_t *builtin_head(lval_t *lval)
+lval_t *builtin_head(lenv_t *env, lval_t *lval)
 {
     LASSERT(lval, lval->count == 1 && lval->cell[0]->type == QEXPR, "`head` symbol can only be applied to one Q-Expression");
     LASSERT(lval, lval->cell[0]->count >= 1, "`head` symbol cannot be applied to an empty Q-Expression");
@@ -371,7 +371,7 @@ lval_t *builtin_head(lval_t *lval)
 /// @brief get the tail of a qexpr and deletes the head.
 /// @param lval
 /// @return the tail of a qexpr.
-lval_t *builtin_tail(lval_t *lval)
+lval_t *builtin_tail(lenv_t *env, lval_t *lval)
 {
     LASSERT(lval, lval->count == 1 && lval->cell[0]->type == QEXPR, "`tail` symbol can only be applied to one Q-Expression");
     LASSERT(lval, lval->cell[0]->count >= 1, "`tail` symbol cannot be applied to an empty Q-Expression");
@@ -386,7 +386,7 @@ lval_t *builtin_tail(lval_t *lval)
 /// @brief Transform a sexpr into a qexpr.
 /// @param lval
 /// @return a qexpr.
-lval_t *builtin_list(lval_t *lval)
+lval_t *builtin_list(lenv_t *env, lval_t *lval)
 {
     LASSERT(lval, lval->type == SEXPR, "`list` symbol can only be applied to a S-Expression");
 
@@ -397,19 +397,19 @@ lval_t *builtin_list(lval_t *lval)
 /// @brief Evaluate a qexpr by transforming it into a sexpr.
 /// @param lval
 /// @return the result of the evaluation.
-lval_t *builtin_eval(lval_t *lval)
+lval_t *builtin_eval(lenv_t *env, lval_t *lval)
 {
     LASSERT(lval, lval->count == 1 && lval->cell[0]->type == QEXPR, "`eval` symbol can only be applied to a Q-Expression");
 
     lval_t *q = lval_take(lval, 0);
     q->type = SEXPR;
-    return lval_eval(q);
+    return lval_eval(env, q);
 }
 
 /// @brief join n-qexpr together.
 /// @param lval
 /// @return the merged qexpr.
-lval_t *builtin_join(lval_t *lval)
+lval_t *builtin_join(lenv_t *env, lval_t *lval)
 {
     unsigned int req_space = 0;
 
