@@ -248,19 +248,26 @@ lval_t *lval_take(lval_t *lval, unsigned int index)
 // | evaluate expressions |
 //  ----------------------
 
-lval_t *lval_eval(lval_t *lval)
+lval_t *lval_eval(lenv_t *env, lval_t *lval)
 {
+    if (lval->type == SYMBOL) {
+        lval_t *val = lenv_get(env, lval->symbol);
+        lval_del(lval);
+        return val;
+    }
+
     if (lval->type == SEXPR)
-        return lval_eval_expr(lval);
+        return lval_eval_sexpr(env, lval);
 
     return lval;
 }
 
-lval_t *lval_eval_expr(lval_t *lval)
+// Evaluate a s-expr. The first element of an s-expr must be a function.
+lval_t *lval_eval_sexpr(lenv_t *env, lval_t *lval)
 {
     for (unsigned int i = 0; i < lval->count; ++i)
     {
-        lval->cell[i] = lval_eval(lval->cell[i]);
+        lval->cell[i] = lval_eval(env, lval->cell[i]);
 
         if (lval->cell[i]->type == ERROR)
             return lval_take(lval, i);
@@ -278,32 +285,17 @@ lval_t *lval_eval_expr(lval_t *lval)
 
     lval_t *first = lval_pop(lval, 0);
 
-    if (first->type != SYMBOL)
+    if (first->type != FUN)
     {
         lval_del(first);
         lval_del(lval);
-        return lval_err("The first element of a S-Expression must be a symbol");
+        return lval_err("The first element of a S-Expression must be a function");
     }
     else
     {
-        if (strcmp(first->symbol, "head") == 0)
-            return builtin_head(lval);
-        else if (strcmp(first->symbol, "tail") == 0)
-            return builtin_tail(lval);
-        else if (strcmp(first->symbol, "list") == 0)
-            return builtin_list(lval);
-        else if (strcmp(first->symbol, "eval") == 0)
-            return builtin_eval(lval);
-        else if (strcmp(first->symbol, "join") == 0)
-            return builtin_join(lval);
-        else if (strstr("-+/*%", first->symbol))
-            return builtin_op(lval, first->symbol);
-
+        lval_t *result = first->function(env, lval);
         lval_del(first);
-        // FIXME: Will never branch here because mpc only parses the symbols
-        //        defined above. I guess i'll let this here in case I implement
-        //        my own parser.
-        return lval_err("unknown symbol");
+        return result;
     }
 }
 

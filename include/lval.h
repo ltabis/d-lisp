@@ -63,8 +63,8 @@ lval_t *lval_add(lval_t *, lval_t *);
 lval_t *lval_pop(lval_t *, unsigned int);
 lval_t *lval_take(lval_t *, unsigned int);
 
-lval_t *lval_eval(lval_t *);
-lval_t *lval_eval_expr(lval_t *);
+lval_t *lval_eval(lenv_t *, lval_t *);
+lval_t *lval_eval_sexpr(lenv_t *, lval_t *);
 lval_t *builtin_op(lval_t *, char *);
 lval_t *builtin_head(lval_t *);
 lval_t *builtin_tail(lval_t *);
