@@ -18,7 +18,7 @@ typedef struct sep_s
 // Create a new d-list parser.
 sep_t init_parser();
 // Parse an input using a specific parser and print the Ast or an error.
-void parse_user_input(sep_t *parser, char *input);
+void parse_user_input(lenv_t *env, sep_t *parser, char *input);
 // Cleanup memory of a d-list parser.
 void cleanup_parser(sep_t *parser);
 

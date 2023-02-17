@@ -37,13 +37,13 @@ dlisp  : /^/ <expr>* /$/ ;                          \
   return parser;
 }
 
-void parse_user_input(sep_t *parser, char *input)
+void parse_user_input(lenv_t *env, sep_t *parser, char *input)
 {
   mpc_result_t r;
 
   if (mpc_parse("<stdin>", input, parser->program, &r))
   {
-    lval_t *lval = lval_eval(lval_read(r.output));
+    lval_t *lval = lval_eval(env, lval_read(r.output));
     lval_println(lval);
     lval_del(lval);
     mpc_ast_delete(r.output);

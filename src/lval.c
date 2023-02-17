@@ -140,6 +140,33 @@ void lenv_push(lenv_t *env, lval_t *key, lval_t *value)
     env->vals[env->count - 1] = lval_clone(value);
 }
 
+// Add a builtin function pointer to an environment.
+void lenv_add_builtin(lenv_t *env, const char *name, lbuiltin function)
+{
+    lval_t *sym = lval_sym(name);
+    lval_t *fun = lval_fun(function);
+
+    lenv_push(env, sym, fun);
+
+    lval_del(sym);
+    lval_del(fun);
+}
+
+// Add all builtins function pointer to an environment.
+void lenv_add_builtins(lenv_t *env)
+{
+    lenv_add_builtin(env, "+", &builtin_op_add);
+    lenv_add_builtin(env, "-", &builtin_op_sub);
+    lenv_add_builtin(env, "/", &builtin_op_div);
+    lenv_add_builtin(env, "*", &builtin_op_mul);
+    lenv_add_builtin(env, "%", &builtin_op_mod);
+    lenv_add_builtin(env, "head", &builtin_head);
+    lenv_add_builtin(env, "tail", &builtin_tail);
+    lenv_add_builtin(env, "list", &builtin_list);
+    lenv_add_builtin(env, "eval", &builtin_eval);
+    lenv_add_builtin(env, "join", &builtin_join);
+}
+
 
 //  ----------------------------------
 // | Reading the abstract syntax tree |
@@ -348,6 +375,31 @@ lval_t *builtin_op(lenv_t *env, lval_t *lval, char *symbol)
 
     lval_del(lval);
     return result;
+}
+
+lval_t *builtin_op_add(lenv_t *env, lval_t *lval)
+{
+    return builtin_op(env, lval, "+");
+}
+
+lval_t *builtin_op_sub(lenv_t *env, lval_t *lval)
+{
+    return builtin_op(env, lval, "-");
+}
+
+lval_t *builtin_op_div(lenv_t *env, lval_t *lval)
+{
+    return builtin_op(env, lval, "/");
+}
+
+lval_t *builtin_op_mul(lenv_t *env, lval_t *lval)
+{
+    return builtin_op(env, lval, "*");
+}
+
+lval_t *builtin_op_mod(lenv_t *env, lval_t *lval)
+{
+    return builtin_op(env, lval, "%");
 }
 
 /// @brief get the head of a qexpr and deletes the tail.

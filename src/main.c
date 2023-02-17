@@ -10,6 +10,9 @@ int main()
     sep_t parser = init_parser();
     char input[INPUT_SIZE] = {0};
     char *rd = NULL;
+    lenv_t *env = lenv_new();
+
+    lenv_add_builtins(env);
 
     fputs("d-lisp> ", stdout);
 
@@ -22,7 +25,7 @@ int main()
             break;
         }
 
-        parse_user_input(&parser, input);
+        parse_user_input(env, &parser, input);
         fputs("d-lisp> ", stdout);
     }
 
@@ -32,6 +35,7 @@ int main()
     }
 
     cleanup_parser(&parser);
+    lenv_del(env);
 
     return OK;
 }

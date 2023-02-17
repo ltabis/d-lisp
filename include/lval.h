@@ -56,6 +56,8 @@ lval_t *lval_err(const char *);
 
 lval_t *lenv_get(lenv_t *, const char *);
 void lenv_push(lenv_t *, lval_t *, lval_t *);
+void lenv_add_builtin(lenv_t *, const char *, lbuiltin);
+void lenv_add_builtins(lenv_t *);
 
 lval_t *lval_read_num(const mpc_ast_t *);
 lval_t *lval_read(const mpc_ast_t *);
@@ -66,6 +68,11 @@ lval_t *lval_take(lval_t *, unsigned int);
 lval_t *lval_eval(lenv_t *, lval_t *);
 lval_t *lval_eval_sexpr(lenv_t *, lval_t *);
 lval_t *builtin_op(lenv_t *, lval_t *, char *);
+lval_t *builtin_op_add(lenv_t *, lval_t *);
+lval_t *builtin_op_sub(lenv_t *, lval_t *);
+lval_t *builtin_op_div(lenv_t *, lval_t *);
+lval_t *builtin_op_mul(lenv_t *, lval_t *);
+lval_t *builtin_op_mod(lenv_t *, lval_t *);
 lval_t *builtin_head(lenv_t *, lval_t *);
 lval_t *builtin_tail(lenv_t *, lval_t *);
 lval_t *builtin_list(lenv_t *, lval_t *);
