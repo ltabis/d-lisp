@@ -94,7 +94,7 @@ lval_t *lval_fun(lbuiltin function)
 
 
 // Return an lval with an error code.
-lval_t *lval_err(const char *msg)
+lval_t *lval_err(const char *fmt, ...)
 {
     lval_t *lval = malloc(sizeof(lval_t));
 
@@ -102,7 +102,18 @@ lval_t *lval_err(const char *msg)
         return NULL;
 
     lval->type = ERROR;
-    lval->error = strdup(msg);
+
+    va_list va;
+    va_start(va, fmt);
+
+    // Write the error message using variable arguments.
+    lval->error = malloc(sizeof(char) * 512);
+    vsnprintf(lval->error, 511, fmt, va);
+
+    va_end(va);
+
+    // Resize the string's memory to it's actual character size.
+    lval->error = realloc(lval->error, strlen(lval->error) + 1);
 
     return lval;
 }
@@ -117,7 +128,7 @@ lval_t *lenv_get(lenv_t *env, const char *sym)
         }
     }
 
-    return lval_err("symbol not found");
+    return lval_err("symbol '%s' not found", sym);
 }
 
 // Push a new lval to the env, replace an existing value
@@ -193,7 +204,7 @@ lval_t *lval_read_num(const mpc_ast_t *ast)
     errno = 0;
     long number = strtol(ast->contents, NULL, 10);
 
-    return errno == ERANGE ? lval_err("Expression is not a number") : lval_num(number);
+    return errno == ERANGE ? lval_err("Expression '%s' is not a number", ast->contents) : lval_num(number);
 }
 
 // Read a S or Q expression.
@@ -261,7 +272,7 @@ lval_t *lval_pop(lval_t *lval, unsigned int index)
     }
     else
     {
-        return lval_err("Trying to pop a lval using an out of scope index");
+        return lval_err("pop index out of scope (index: %u, size: %u)", index, lval->count - 1);
     }
 }
 
@@ -337,7 +348,7 @@ lval_t *builtin_op(lenv_t *env, lval_t *lval, char *symbol)
         if (lval->cell[i]->type != NUMBER)
         {
             lval_del(lval);
-            return lval_err("Numerical operators can only be applied to number");
+            return lval_err("Numerical operators can only be applied to numbers");
         }
     }
 
@@ -529,7 +540,7 @@ static void lval_print(const lval_t *lval)
         printf("%s", lval->symbol);
         break;
     case ERROR:
-        printf("Error: %s", lval->error);
+        printf("Error: %s.", lval->error);
         break;
     case SEXPR:
         lval_print_expr(lval, '(', ')');

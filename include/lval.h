@@ -9,8 +9,12 @@
 
 #define COMPOUND_CHAR_COUNT 4
 
-#define LASSERT(args, cond, err) \
-  if (!(cond)) { lval_del(args); return lval_err(err); }
+#define LASSERT(args, cond, fmt, ...) \
+  if (!(cond)) { \
+    lval_t *err = lval_err(fmt, ##__VA_ARGS__); \
+    lval_del(args); \
+    return err; \
+  }
 
 typedef struct lval_s lval_t;
 typedef struct lenv_s lenv_t;
@@ -52,7 +56,7 @@ lenv_t *lenv_new();
 lval_t *lval_num(long);
 lval_t *lval_sym(const char *);
 lval_t *lval_sexpr();
-lval_t *lval_err(const char *);
+lval_t *lval_err(const char *, ...);
 
 lval_t *lenv_get(lenv_t *, const char *);
 void lenv_push(lenv_t *, lval_t *, lval_t *);
