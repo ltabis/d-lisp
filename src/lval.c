@@ -127,7 +127,7 @@ void lenv_push(lenv_t *env, lval_t *key, lval_t *value)
     for (size_t i = 0; i < env->count; ++i) {
         if (strcmp(key->symbol, env->syms[i]) == 0) {
             lval_del(env->vals[i]);
-            env->vals[i] = value;
+            env->vals[i] = lval_clone(value);
             return;
         }
     }
@@ -165,6 +165,7 @@ void lenv_add_builtins(lenv_t *env)
     lenv_add_builtin(env, "list", &builtin_list);
     lenv_add_builtin(env, "eval", &builtin_eval);
     lenv_add_builtin(env, "join", &builtin_join);
+    lenv_add_builtin(env, "def", &builtin_def);
 }
 
 
@@ -491,6 +492,26 @@ lval_t *builtin_join(lenv_t *env, lval_t *lval)
     lval_del(lval);
     return join;
 }
+
+lval_t *builtin_def(lenv_t *env, lval_t *lval)
+{
+    LASSERT(lval, lval->cell[0]->type == QEXPR, "`def` function can only be applied to a Q-Expression of symbols followed by any expression");
+    LASSERT(lval, lval->cell[0]->count == lval->count - 1, "the number of variables must be the same as values when using the `def` function");
+
+    lval_t *symbols = lval->cell[0];
+
+    for (size_t i = 0; i < symbols->count; ++i) {
+        LASSERT(symbols, symbols->cell[i]->type == SYMBOL, "all members of the q-expression after the `def` function must be symbols");
+    }
+
+    for (size_t i = 0; i < symbols->count; ++i) {
+        lenv_push(env, symbols->cell[i], lval->cell[i + 1]);
+    }
+
+    lval_del(lval);
+    return lval_sexpr();
+}
+
 //  -------------------------------
 // | print the generated lval tree |
 //  -------------------------------

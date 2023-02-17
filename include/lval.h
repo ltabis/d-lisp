@@ -78,6 +78,7 @@ lval_t *builtin_tail(lenv_t *, lval_t *);
 lval_t *builtin_list(lenv_t *, lval_t *);
 lval_t *builtin_eval(lenv_t *, lval_t *);
 lval_t *builtin_join(lenv_t *, lval_t *);
+lval_t *builtin_def(lenv_t *, lval_t *);
 
 void lval_println(lval_t *);
 
