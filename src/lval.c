@@ -78,7 +78,7 @@ lval_t *lval_qexpr()
     return lval;
 }
 
-// Return an lval with a function pointer.
+// Return an lval with a function pointer to a builtin function.
 lval_t *lval_fun(lbuiltin function)
 {
     lval_t *lval = malloc(sizeof(lval_t));
@@ -87,11 +87,26 @@ lval_t *lval_fun(lbuiltin function)
         return NULL;
 
     lval->type = FUN;
-    lval->function = function;
+    lval->builtin = function;
 
     return lval;
 }
 
+lval_t *lval_lambda(lval_t *formals, lval_t *body)
+{
+    lval_t *lval = malloc(sizeof(lval_t));
+
+    if (!lval)
+        return NULL;
+
+    lval->type = FUN;
+    lval->builtin = NULL;
+    lval->env = lenv_new();
+    lval->formals = formals;
+    lval->body = body;
+
+    return lval;
+}
 
 // Return an lval with an error code.
 lval_t *lval_err(const char *fmt, ...)
@@ -177,6 +192,7 @@ void lenv_add_builtins(lenv_t *env)
     lenv_add_builtin(env, "eval", &builtin_eval);
     lenv_add_builtin(env, "join", &builtin_join);
     lenv_add_builtin(env, "def", &builtin_def);
+    lenv_add_builtin(env, "\\", &builtin_lambda);
 }
 
 
@@ -523,6 +539,26 @@ lval_t *builtin_def(lenv_t *env, lval_t *lval)
     return lval_sexpr();
 }
 
+lval_t *builtin_lambda(lenv_t *env, lval_t *lval)
+{
+    LASSERT_NUM_PARAMS(lval, 2);
+    LASSERT_TYPE(lval, 0, QEXPR);
+    LASSERT_TYPE(lval, 1, QEXPR);
+
+    for (size_t i = 0; i < lval->cell[0]->count ;++i)
+    {
+        // FIXME: this is wrong because on error lval wont be freed,
+        //        only lval->cell[0].
+        LASSERT_TYPE(lval->cell[0], i, SYMBOL);
+    }
+
+    lval_t *formals = lval_pop(lval, 0);
+    lval_t *body = lval_pop(lval, 0);
+    lval_del(lval);
+
+    return lval_lambda(env, formals, body);
+}
+
 //  -------------------------------
 // | print the generated lval tree |
 //  -------------------------------
@@ -549,9 +585,16 @@ static void lval_print(const lval_t *lval)
         lval_print_expr(lval, '{', '}');
         break;
     case FUN:
-        puts("<function>");
+        if (lval->builtin) {
+            puts("<builtin>");
+        } else {
+            printf("(\\");
+            lval_print(lval->formals);
+            putchar(' ');
+            lval_print(lval->body);
+            putchar(')');
+        }
         break;
-
     default:
         break;
     }
@@ -580,6 +623,20 @@ void lval_println(lval_t *lval)
     putchar('\n');
 }
 
+char *lval_type_name(unsigned int t)
+{
+  switch (t)
+  {
+    case LVAL_FUN: return "Function";
+    case LVAL_NUM: return "Number";
+    case LVAL_ERR: return "Error";
+    case LVAL_SYM: return "Symbol";
+    case LVAL_SEXPR: return "S-Expression";
+    case LVAL_QEXPR: return "Q-Expression";
+    default: return "Unknown";
+  }
+}
+
 //  -------------------
 // | lval manipulation |
 //  -------------------
@@ -594,7 +651,6 @@ lval_t *lval_clone(lval_t *lval)
 
     switch (new->type) {
         case NUMBER: new->number = lval->number; break;
-        case FUN: new->function = lval->function; break;
         case SYMBOL: new->symbol = strdup(lval->symbol); break;
         case ERROR: new->error = strdup(lval->error); break;
         case SEXPR:
@@ -605,6 +661,17 @@ lval_t *lval_clone(lval_t *lval)
             for (unsigned int i = 0; i < new->count; ++i)
             {
                 new->cell[i] = lval_clone(lval->cell[i]);
+            }
+            break;
+        case FUN:
+            if (lval->builtin)
+            {
+                new->builtin = lval->builtin;
+            } else {
+                new->builtin = NULL;
+                new->env = lenv_clone(lval->env);
+                new->formals = lval_clone(lval->formals);
+                new->body = lval_clone(lval->body);
             }
             break;
         default:
@@ -648,6 +715,13 @@ void lval_del(lval_t *lval)
         free(lval->cell);
         break;
     case FUN:
+        if (!lval->builtin)
+        {
+            lenv_del(lval->env);
+            lval_del(lval->formals);
+            lval_del(lval->body);
+        }
+        break;
     default:
         // FIXME: Should crash the program because all enum values should be handled.
         return;
