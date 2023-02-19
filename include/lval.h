@@ -16,20 +16,21 @@
     return err; \
   }
 
-#define LASSERT_NUM_PARAMS(args, count) \
+#define LASSERT_NUM_PARAMS(function, args, expected) \
   LASSERT( \
     args, \
-    args->count == count, \
-    "expected %ld parameters, got %ld", count, args->count \
+    args->count == expected, \
+    "function '%s' expected %i parameters, got %i", function, expected, args->count \
   )
 
-#define LASSERT_TYPE(args, children, type) \
+#define LASSERT_TYPE(function, args, children, expected) \
   LASSERT( \
     args, \
-    args->cell[children]->type == type, \
-    "expected children at index %ld to be of type '%s', not '%s'", \
+    args->cell[children]->type == expected, \
+    "function '%s' expected children at index %i to be of type '%s', not '%s'", \
+      function,\
       children,\
-      lval_type_name(type), \
+      lval_type_name(expected), \
       lval_type_name(args->cell[children]->type) \
   )
 
@@ -68,6 +69,7 @@ typedef struct lval_s
 
 // Used to keep track of the variables names and their associated lval.
 struct lenv_s {
+  lenv_t *parent;
   size_t count;
   char **syms;
   lval_t **vals;
@@ -84,6 +86,7 @@ lval_t *lval_err(const char *, ...);
 
 lval_t *lenv_get(lenv_t *, const char *);
 void lenv_push(lenv_t *, lval_t *, lval_t *);
+void lenv_def(lenv_t *, lval_t *, lval_t *);
 void lenv_add_builtin(lenv_t *, const char *, lbuiltin);
 void lenv_add_builtins(lenv_t *);
 
@@ -106,13 +109,16 @@ lval_t *builtin_tail(lenv_t *, lval_t *);
 lval_t *builtin_list(lenv_t *, lval_t *);
 lval_t *builtin_eval(lenv_t *, lval_t *);
 lval_t *builtin_join(lenv_t *, lval_t *);
+lval_t *builtin_var(lenv_t *, lval_t *, const char *);
 lval_t *builtin_def(lenv_t *, lval_t *);
+lval_t *builtin_push(lenv_t *, lval_t *);
 lval_t *builtin_lambda(lenv_t *, lval_t *);
 
 void lval_println(lval_t *);
-char *lval_type_name(unsigned int t)
+char *lval_type_name(unsigned int t);
 
 lval_t *lval_clone(lval_t *);
+lenv_t *lenv_clone(lenv_t *);
 void lval_del(lval_t *);
 void lenv_del(lenv_t *);
 

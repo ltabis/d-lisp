@@ -9,9 +9,11 @@ lenv_t *lenv_new()
 {
     lenv_t *env = malloc(sizeof(lenv_t));
 
+    // FIXME: probably overkill.
     if (!env)
         return NULL;
 
+    env->parent = NULL;
     env->count = 0;
     env->syms = NULL;
     env->vals = NULL;
@@ -143,10 +145,15 @@ lval_t *lenv_get(lenv_t *env, const char *sym)
         }
     }
 
+    if (env->parent)
+    {
+        return lenv_get(env->parent, sym);
+    }
+
     return lval_err("symbol '%s' not found", sym);
 }
 
-// Push a new lval to the env, replace an existing value
+// Push a new lval to the local env, replace an existing value
 // if the key is already part of the environment.
 void lenv_push(lenv_t *env, lval_t *key, lval_t *value)
 {
@@ -164,6 +171,14 @@ void lenv_push(lenv_t *env, lval_t *key, lval_t *value)
 
     env->syms[env->count - 1] = strdup(key->symbol);
     env->vals[env->count - 1] = lval_clone(value);
+}
+
+// Push a new lval to the global env, replace an existing value
+// if the key is already part of the environment.
+void lenv_def(lenv_t *env, lval_t *key, lval_t *value)
+{
+    for (; env->parent; env = env->parent);
+    lenv_push(env, key, value);
 }
 
 // Add a builtin function pointer to an environment.
@@ -192,6 +207,7 @@ void lenv_add_builtins(lenv_t *env)
     lenv_add_builtin(env, "eval", &builtin_eval);
     lenv_add_builtin(env, "join", &builtin_join);
     lenv_add_builtin(env, "def", &builtin_def);
+    lenv_add_builtin(env, "=", &builtin_push);
     lenv_add_builtin(env, "\\", &builtin_lambda);
 }
 
@@ -348,9 +364,15 @@ lval_t *lval_eval_sexpr(lenv_t *env, lval_t *lval)
     }
     else
     {
-        lval_t *result = first->function(env, lval);
-        lval_del(first);
-        return result;
+        if (first->builtin)
+        {
+            lval_t *result = first->builtin(env, lval);
+            lval_del(first);
+            return result;
+        } else {
+            // TODO:
+            return NULL;
+        }
     }
 }
 
@@ -520,7 +542,7 @@ lval_t *builtin_join(lenv_t *env, lval_t *lval)
     return join;
 }
 
-lval_t *builtin_def(lenv_t *env, lval_t *lval)
+lval_t *builtin_var(lenv_t *env, lval_t *lval, const char *function)
 {
     LASSERT(lval, lval->cell[0]->type == QEXPR, "`def` function can only be applied to a Q-Expression of symbols followed by any expression");
     LASSERT(lval, lval->cell[0]->count == lval->count - 1, "the number of variables must be the same as values when using the `def` function");
@@ -532,31 +554,47 @@ lval_t *builtin_def(lenv_t *env, lval_t *lval)
     }
 
     for (size_t i = 0; i < symbols->count; ++i) {
-        lenv_push(env, symbols->cell[i], lval->cell[i + 1]);
+
+        if (strcmp(function, "def") == 0)
+        {
+            lenv_def(env, symbols->cell[i], lval->cell[i + 1]);
+        } else if (strcmp(function, "def") == 0) {
+            lenv_push(env, symbols->cell[i], lval->cell[i + 1]);
+        }
     }
 
     lval_del(lval);
     return lval_sexpr();
 }
 
+lval_t *builtin_def(lenv_t *env, lval_t *lval)
+{
+    return builtin_var(env, lval, "def");
+}
+
+lval_t *builtin_push(lenv_t *env, lval_t *lval)
+{
+    return builtin_var(env, lval, "=");
+}
+
 lval_t *builtin_lambda(lenv_t *env, lval_t *lval)
 {
-    LASSERT_NUM_PARAMS(lval, 2);
-    LASSERT_TYPE(lval, 0, QEXPR);
-    LASSERT_TYPE(lval, 1, QEXPR);
+    LASSERT_NUM_PARAMS("\\", lval, 2);
+    LASSERT_TYPE("\\", lval, 0, QEXPR);
+    LASSERT_TYPE("\\", lval, 1, QEXPR);
 
     for (size_t i = 0; i < lval->cell[0]->count ;++i)
     {
         // FIXME: this is wrong because on error lval wont be freed,
         //        only lval->cell[0].
-        LASSERT_TYPE(lval->cell[0], i, SYMBOL);
+        LASSERT_TYPE("\\", lval->cell[0], i, SYMBOL);
     }
 
     lval_t *formals = lval_pop(lval, 0);
     lval_t *body = lval_pop(lval, 0);
     lval_del(lval);
 
-    return lval_lambda(env, formals, body);
+    return lval_lambda(formals, body);
 }
 
 //  -------------------------------
@@ -627,12 +665,12 @@ char *lval_type_name(unsigned int t)
 {
   switch (t)
   {
-    case LVAL_FUN: return "Function";
-    case LVAL_NUM: return "Number";
-    case LVAL_ERR: return "Error";
-    case LVAL_SYM: return "Symbol";
-    case LVAL_SEXPR: return "S-Expression";
-    case LVAL_QEXPR: return "Q-Expression";
+    case NUMBER: return "Number";
+    case FUN: return "Function";
+    case ERROR: return "Error";
+    case SYMBOL: return "Symbol";
+    case SEXPR: return "S-Expression";
+    case QEXPR: return "Q-Expression";
     default: return "Unknown";
   }
 }
@@ -640,6 +678,26 @@ char *lval_type_name(unsigned int t)
 //  -------------------
 // | lval manipulation |
 //  -------------------
+
+lenv_t *lenv_clone(lenv_t *env)
+{
+    lenv_t *new = malloc(sizeof(lenv_t));
+
+    // We never clone the parent environment because it is shared.
+    new->parent = env->parent;
+
+    new->count = env->count;
+    new->syms = malloc(sizeof(char *) * new->count);
+    new->vals = malloc(sizeof(lval_t *) * new->count);
+
+    for (size_t i = 0; i < new->count; ++i)
+    {
+        new->syms[i] = strdup(env->syms[i]);
+        new->vals[i] = lval_clone(env->vals[i]);
+    }
+
+    return new;
+}
 
 lval_t *lval_clone(lval_t *lval)
 {
