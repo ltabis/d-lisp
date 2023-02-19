@@ -362,19 +362,33 @@ lval_t *lval_eval_sexpr(lenv_t *env, lval_t *lval)
         lval_del(lval);
         return lval_err("The first element of a S-Expression must be a function");
     }
-    else
-    {
-        if (first->builtin)
-        {
-            lval_t *result = first->builtin(env, lval);
-            lval_del(first);
-            return result;
-        } else {
-            // TODO:
-            return NULL;
-        }
-    }
+
+    return lval_call(env, first, lval);
 }
+
+// TODO: Could implement partially initialize functions like in the book.
+//       See https://buildyourownlisp.com/chapter12_functions
+lval_t *lval_call(lenv_t *env, lval_t *func, lval_t *args)
+{
+    if (func->builtin)
+        return func->builtin(env, args);
+
+    LASSERT(func, func->formals->count == args->count,
+        "lambda expected %ld parameter, got %ld", func->formals->count, args->count
+    );
+
+    for (size_t i = 0; i < args->count; ++i)
+    {
+        lenv_push(func->env, func->formals->cell[i], args->cell[i]);
+    }
+
+    lval_del(args);
+
+    func->env->parent = env;
+
+    return builtin_eval(func->env, lval_add(lval_sexpr(), lval_clone(func->body)));
+}
+
 
 /// @brief evaluate an math operator on a list of numbers.
 /// @param lval
