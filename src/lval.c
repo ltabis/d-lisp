@@ -209,6 +209,7 @@ void lenv_add_builtins(lenv_t *env)
     lenv_add_builtin(env, "def", &builtin_def);
     lenv_add_builtin(env, "=", &builtin_push);
     lenv_add_builtin(env, "\\", &builtin_lambda);
+    lenv_add_builtin(env, "fn", &builtin_fn);
 }
 
 
@@ -617,6 +618,30 @@ lval_t *builtin_lambda(lenv_t *env, lval_t *lval)
     lval_del(lval);
 
     return lval_lambda(formals, body);
+}
+
+lval_t *builtin_fn(lenv_t *env, lval_t *lval)
+{
+    LASSERT_NUM_PARAMS("fn", lval, 2);
+    LASSERT_TYPE("fn", lval, 0, QEXPR);
+    LASSERT_TYPE("fn", lval, 1, QEXPR);
+
+    for (size_t i = 0; i < lval->cell[1]->count ;++i)
+    {
+        // FIXME: this is wrong because on error lval wont be freed,
+        //        only lval->cell[1].
+        LASSERT_TYPE("fn", lval->cell[0], i, SYMBOL);
+    }
+
+    lval_t *formals = lval_pop(lval, 0);
+    lval_t *name = lval_pop(formals, 0);
+    lval_t *body = lval_pop(lval, 0);
+    lval_t *function = lval_lambda(formals, body);
+
+    lenv_def(env, name, function);
+    lval_del(lval);
+
+    return function;
 }
 
 //  -------------------------------
