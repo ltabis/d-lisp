@@ -591,6 +591,14 @@ lval_t *builtin_push(lenv_t *env, lval_t *lval)
     return builtin_var(env, lval, "=");
 }
 
+// Create a lambda function from two q-expr, one for the arguments,
+// and the other for the body.
+//
+// NOTE: you can create a function naming syntax using:
+//       `def {fun} (\ {args body} {def (head args) (\ (tail args) body)})`
+//       It defines a function that creates a lambda from `args` (the first
+//       one is the name of the function) and a `body`.
+//       e.g. `fun {add x y} {+ x y}`
 lval_t *builtin_lambda(lenv_t *env, lval_t *lval)
 {
     LASSERT_NUM_PARAMS("\\", lval, 2);
