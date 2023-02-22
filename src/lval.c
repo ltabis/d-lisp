@@ -201,6 +201,10 @@ void lenv_add_builtins(lenv_t *env)
     lenv_add_builtin(env, "/", &builtin_op_div);
     lenv_add_builtin(env, "*", &builtin_op_mul);
     lenv_add_builtin(env, "%", &builtin_op_mod);
+    lenv_add_builtin(env, ">", &builtin_op_greater);
+    lenv_add_builtin(env, ">=", &builtin_op_greater_equal);
+    lenv_add_builtin(env, "<", &builtin_op_lesser);
+    lenv_add_builtin(env, "<=", &builtin_op_lesser_equal);
     lenv_add_builtin(env, "head", &builtin_head);
     lenv_add_builtin(env, "tail", &builtin_tail);
     lenv_add_builtin(env, "list", &builtin_list);
@@ -434,7 +438,18 @@ lval_t *builtin_op(lenv_t *env, lval_t *lval, char *symbol)
             }
         else if (strcmp(symbol, "%") == 0)
             result->number %= next->number;
+        else if (strcmp(symbol, ">") == 0)
+            result->number = result->number > next->number;
+        else if (strcmp(symbol, ">=") == 0)
+            result->number = result->number >= next->number;
+        else if (strcmp(symbol, "<") == 0)
+            result->number = result->number < next->number;
+        else if (strcmp(symbol, "<=") == 0)
+            result->number = result->number <= next->number;
 
+        // NOTE: No need for a else statement here, since
+        //       this function can only be called from
+        //       a valid symbol.
         lval_del(next);
     }
 
@@ -465,6 +480,26 @@ lval_t *builtin_op_mul(lenv_t *env, lval_t *lval)
 lval_t *builtin_op_mod(lenv_t *env, lval_t *lval)
 {
     return builtin_op(env, lval, "%");
+}
+
+lval_t *builtin_op_greater(lenv_t *env, lval_t *lval)
+{
+    return builtin_op(env, lval, ">");
+}
+
+lval_t *builtin_op_greater_equal(lenv_t *env, lval_t *lval)
+{
+    return builtin_op(env, lval, ">=");
+}
+
+lval_t *builtin_op_lesser(lenv_t *env, lval_t *lval)
+{
+    return builtin_op(env, lval, "<");
+}
+
+lval_t *builtin_op_lesser_equal(lenv_t *env, lval_t *lval)
+{
+    return builtin_op(env, lval, "<=");
 }
 
 /// @brief get the head of a qexpr and deletes the tail.
