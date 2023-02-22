@@ -10,4 +10,3 @@ Based on https://buildyourownlisp.com/
   - \: declare an anonymous function.
   - head: return the first element of an expression.
   - tail: return an expression without it's first parameter.
-  - 

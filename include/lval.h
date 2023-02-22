@@ -110,6 +110,7 @@ lval_t *builtin_op_greater_equal(lenv_t *, lval_t *);
 lval_t *builtin_op_lesser(lenv_t *, lval_t *);
 lval_t *builtin_op_lesser_equal(lenv_t *, lval_t *);
 lval_t *builtin_op_equal(lenv_t *, lval_t *);
+lval_t *builtin_op_not_equal(lenv_t *, lval_t *);
 lval_t *builtin_head(lenv_t *, lval_t *);
 lval_t *builtin_tail(lenv_t *, lval_t *);
 lval_t *builtin_list(lenv_t *, lval_t *);
