@@ -120,6 +120,7 @@ lval_t *builtin_def(lenv_t *, lval_t *);
 lval_t *builtin_push(lenv_t *, lval_t *);
 lval_t *builtin_lambda(lenv_t *, lval_t *);
 lval_t *builtin_fn(lenv_t *, lval_t *);
+lval_t *builtin_if(lenv_t *, lval_t *);
 
 void lval_println(lval_t *);
 char *lval_type_name(unsigned int t);

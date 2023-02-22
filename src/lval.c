@@ -215,6 +215,7 @@ void lenv_add_builtins(lenv_t *env)
     lenv_add_builtin(env, "=", &builtin_push);
     lenv_add_builtin(env, "\\", &builtin_lambda);
     lenv_add_builtin(env, "fn", &builtin_fn);
+    lenv_add_builtin(env, "if", &builtin_if);
 }
 
 
@@ -686,6 +687,23 @@ lval_t *builtin_fn(lenv_t *env, lval_t *lval)
 
     return function;
 }
+
+lval_t *builtin_if(lenv_t *env, lval_t *lval)
+{
+    LASSERT_NUM_PARAMS("if", lval, 3);
+    LASSERT_TYPE("if", lval, 0, NUMBER);
+    LASSERT_TYPE("if", lval, 1, QEXPR);
+    LASSERT_TYPE("if", lval, 2, QEXPR);
+
+    lval_t *cond = lval_pop(lval, 0);
+    lval_t *expr = lval_take(lval, cond->number ? 0 : 1);
+    expr->type = SEXPR;
+
+    lval_del(cond);
+
+    return lval_eval(env, expr);
+}
+
 
 //  -------------------------------
 // | print the generated lval tree |
