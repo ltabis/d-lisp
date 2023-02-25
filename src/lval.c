@@ -414,6 +414,9 @@ int lval_eq(lval_t *x, lval_t *y)
             }
         case SEXPR:
         case QEXPR:
+            if (x->count != y->count)
+                return 0;
+
             for (unsigned int i = 0; i < x->count; ++i) {
                 if (lval_eq(x->cell[i], y->cell[i]) == 0) {
                     return 0;
@@ -721,7 +724,7 @@ lval_t *builtin_fn(lenv_t *env, lval_t *lval)
     LASSERT_CHILDREN_TYPE("fn", lval, 0, QEXPR);
     LASSERT_CHILDREN_TYPE("fn", lval, 1, QEXPR);
 
-    for (size_t i = 0; i < lval->cell[1]->count ;++i)
+    for (size_t i = 0; i < lval->cell[0]->count ;++i)
     {
         // FIXME: this is wrong because on error lval wont be freed,
         //        only lval->cell[1].
