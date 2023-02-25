@@ -205,8 +205,8 @@ void lenv_add_builtins(lenv_t *env)
     lenv_add_builtin(env, ">=", &builtin_op_greater_equal);
     lenv_add_builtin(env, "<", &builtin_op_lesser);
     lenv_add_builtin(env, "<=", &builtin_op_lesser_equal);
-    lenv_add_builtin(env, "==", &builtin_op_equal);
-    lenv_add_builtin(env, "!=", &builtin_op_not_equal);
+    lenv_add_builtin(env, "==", &builtin_cmp_eq);
+    lenv_add_builtin(env, "!=", &builtin_cmp_neq);
     lenv_add_builtin(env, "head", &builtin_head);
     lenv_add_builtin(env, "tail", &builtin_tail);
     lenv_add_builtin(env, "list", &builtin_list);
@@ -374,7 +374,7 @@ lval_t *lval_eval_sexpr(lenv_t *env, lval_t *lval)
     return lval_call(env, first, lval);
 }
 
-// TODO: Could implement partially initialize functions like in the book.
+// TODO: Could implement partially initialized functions like in the book. (or currying)
 //       See https://buildyourownlisp.com/chapter12_functions
 lval_t *lval_call(lenv_t *env, lval_t *func, lval_t *args)
 {
@@ -397,6 +397,36 @@ lval_t *lval_call(lenv_t *env, lval_t *func, lval_t *args)
     return builtin_eval(func->env, lval_add(lval_sexpr(), lval_clone(func->body)));
 }
 
+int lval_eq(lval_t *x, lval_t *y)
+{
+    if (x->type != y->type)
+        return 0;
+
+    // NOTE: non-exhaustive.
+    switch (x->type) {
+        case NUMBER: return x->number == y->number;
+        case SYMBOL: return strcmp(x->symbol, y->symbol);
+        case FUN:
+            if (x->builtin != NULL && y->builtin != NULL) {
+                return x->builtin == y->builtin;
+            } else {
+                return 0;
+            }
+        case SEXPR:
+        case QEXPR:
+            for (unsigned int i = 0; i < x->count; ++i) {
+                if (lval_eq(x->cell[i], y->cell[i]) == 0) {
+                    return 0;
+                }
+            }
+
+            return 1;
+        case ERROR: return strcmp(x->error, y->error);
+    }
+
+    // To please the compiler.
+    return 0;
+}
 
 /// @brief evaluate an math operator on a list of numbers.
 /// @param lval
@@ -449,10 +479,6 @@ lval_t *builtin_op(lenv_t *env, lval_t *lval, char *symbol)
             result->number = result->number < next->number;
         else if (strcmp(symbol, "<=") == 0)
             result->number = result->number <= next->number;
-        else if (strcmp(symbol, "==") == 0)
-            result->number = result->number == next->number;
-        else if (strcmp(symbol, "!=") == 0)
-            result->number = result->number != next->number;
 
         // NOTE: No need for a else statement here, since
         //       this function can only be called from
@@ -509,14 +535,31 @@ lval_t *builtin_op_lesser_equal(lenv_t *env, lval_t *lval)
     return builtin_op(env, lval, "<=");
 }
 
-lval_t *builtin_op_equal(lenv_t *env, lval_t *lval)
+lval_t *builtin_cmp(lenv_t *env, lval_t *lval, const char *op)
 {
-    return builtin_op(env, lval, "==");
+    LASSERT_NUM_PARAMS(op, lval, 2);
+
+    int result;
+
+    if (strcmp(op, "==") == 0) {
+        result = lval_eq(lval->cell[0], lval->cell[1]);
+    } else if (strcmp(op, "!=") == 0) {
+        result = !lval_eq(lval->cell[0], lval->cell[1]);
+    }
+
+    lval_del(lval);
+
+    return lval_num(result);
 }
 
-lval_t *builtin_op_not_equal(lenv_t *env, lval_t *lval)
+lval_t *builtin_cmp_eq(lenv_t *env, lval_t *lval)
 {
-    return builtin_op(env, lval, "!=");
+    return builtin_cmp(env, lval, "==");
+}
+
+lval_t *builtin_cmp_neq(lenv_t *env, lval_t *lval)
+{
+    return builtin_cmp(env, lval, "!=");
 }
 
 /// @brief get the head of a qexpr and deletes the tail.
@@ -655,14 +698,14 @@ lval_t *builtin_push(lenv_t *env, lval_t *lval)
 lval_t *builtin_lambda(lenv_t *env, lval_t *lval)
 {
     LASSERT_NUM_PARAMS("\\", lval, 2);
-    LASSERT_TYPE("\\", lval, 0, QEXPR);
-    LASSERT_TYPE("\\", lval, 1, QEXPR);
+    LASSERT_CHILDREN_TYPE("\\", lval, 0, QEXPR);
+    LASSERT_CHILDREN_TYPE("\\", lval, 1, QEXPR);
 
     for (size_t i = 0; i < lval->cell[0]->count ;++i)
     {
         // FIXME: this is wrong because on error lval wont be freed,
         //        only lval->cell[0].
-        LASSERT_TYPE("\\", lval->cell[0], i, SYMBOL);
+        LASSERT_CHILDREN_TYPE("\\", lval->cell[0], i, SYMBOL);
     }
 
     lval_t *formals = lval_pop(lval, 0);
@@ -675,14 +718,14 @@ lval_t *builtin_lambda(lenv_t *env, lval_t *lval)
 lval_t *builtin_fn(lenv_t *env, lval_t *lval)
 {
     LASSERT_NUM_PARAMS("fn", lval, 2);
-    LASSERT_TYPE("fn", lval, 0, QEXPR);
-    LASSERT_TYPE("fn", lval, 1, QEXPR);
+    LASSERT_CHILDREN_TYPE("fn", lval, 0, QEXPR);
+    LASSERT_CHILDREN_TYPE("fn", lval, 1, QEXPR);
 
     for (size_t i = 0; i < lval->cell[1]->count ;++i)
     {
         // FIXME: this is wrong because on error lval wont be freed,
         //        only lval->cell[1].
-        LASSERT_TYPE("fn", lval->cell[0], i, SYMBOL);
+        LASSERT_CHILDREN_TYPE("fn", lval->cell[0], i, SYMBOL);
     }
 
     lval_t *formals = lval_pop(lval, 0);
@@ -699,9 +742,9 @@ lval_t *builtin_fn(lenv_t *env, lval_t *lval)
 lval_t *builtin_if(lenv_t *env, lval_t *lval)
 {
     LASSERT_NUM_PARAMS("if", lval, 3);
-    LASSERT_TYPE("if", lval, 0, NUMBER);
-    LASSERT_TYPE("if", lval, 1, QEXPR);
-    LASSERT_TYPE("if", lval, 2, QEXPR);
+    LASSERT_CHILDREN_TYPE("if", lval, 0, NUMBER);
+    LASSERT_CHILDREN_TYPE("if", lval, 1, QEXPR);
+    LASSERT_CHILDREN_TYPE("if", lval, 2, QEXPR);
 
     lval_t *cond = lval_pop(lval, 0);
     lval_t *expr = lval_take(lval, cond->number ? 0 : 1);

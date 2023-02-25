@@ -23,7 +23,17 @@
     "function '%s' expected %i parameters, got %i", function, expected, args->count \
   )
 
-#define LASSERT_TYPE(function, args, children, expected) \
+#define LASSERT_TYPE(function, arg, expected) \
+  LASSERT( \
+    arg, \
+    arg->type == expected, \
+    "function '%s' expected value to be of type '%s', not '%s'", \
+      function,\
+      lval_type_name(expected), \
+      lval_type_name(arg->type) \
+  )
+
+#define LASSERT_CHILDREN_TYPE(function, args, children, expected) \
   LASSERT( \
     args, \
     args->cell[children]->type == expected, \
@@ -99,6 +109,8 @@ lval_t *lval_take(lval_t *, unsigned int);
 lval_t *lval_eval(lenv_t *, lval_t *);
 lval_t *lval_eval_sexpr(lenv_t *, lval_t *);
 lval_t *lval_call(lenv_t *, lval_t *, lval_t *);
+int lval_eq(lval_t *, lval_t *);
+int lval_cmp(lval_t *, lval_t *);
 lval_t *builtin_op(lenv_t *, lval_t *, char *);
 lval_t *builtin_op_add(lenv_t *, lval_t *);
 lval_t *builtin_op_sub(lenv_t *, lval_t *);
@@ -109,8 +121,9 @@ lval_t *builtin_op_greater(lenv_t *, lval_t *);
 lval_t *builtin_op_greater_equal(lenv_t *, lval_t *);
 lval_t *builtin_op_lesser(lenv_t *, lval_t *);
 lval_t *builtin_op_lesser_equal(lenv_t *, lval_t *);
-lval_t *builtin_op_equal(lenv_t *, lval_t *);
-lval_t *builtin_op_not_equal(lenv_t *, lval_t *);
+lval_t *builtin_cmp(lenv_t *, lval_t *, const char *);
+lval_t *builtin_cmp_eq(lenv_t *, lval_t *);
+lval_t *builtin_cmp_neq(lenv_t *, lval_t *);
 lval_t *builtin_head(lenv_t *, lval_t *);
 lval_t *builtin_tail(lenv_t *, lval_t *);
 lval_t *builtin_list(lenv_t *, lval_t *);
