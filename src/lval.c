@@ -261,6 +261,19 @@ lval_t *lval_read_num(const mpc_ast_t *ast)
     return errno == ERANGE ? lval_err("Expression '%s' is not a number", ast->contents) : lval_num(number);
 }
 
+lval_t *lval_read_string(const mpc_ast_t *ast)
+{
+    char *unescaped = strndup(ast->contents + 1, strlen(ast->contents) - 2);
+
+    unescaped = mpcf_unescape(unescaped);
+
+    lval_t *string = lval_string(unescaped);
+
+    free(unescaped);
+
+    return string;
+}
+
 // Read a S or Q expression.
 lval_t *lval_read_expr(const mpc_ast_t *ast, lval_type_t expr_type)
 {
@@ -287,6 +300,8 @@ lval_t *lval_read(const mpc_ast_t *ast)
 {
     if (strstr(ast->tag, "number"))
         return lval_read_num(ast);
+    else if (strstr(ast->tag, "string"))
+        return lval_read_string(ast);
     else if (strstr(ast->tag, "symbol"))
         return lval_sym(ast->contents);
     else if (strstr(ast->tag, "sexpr") || strcmp(ast->tag, ">") == 0)

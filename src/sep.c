@@ -4,6 +4,7 @@
 sep_t init_parser()
 {
   mpc_parser_t *number = mpc_new("number");
+  mpc_parser_t *string = mpc_new("string");
   mpc_parser_t *symbol = mpc_new("symbol");
   mpc_parser_t *expr = mpc_new("expr");
   mpc_parser_t *sexpr = mpc_new("sexpr");
@@ -12,6 +13,7 @@ sep_t init_parser()
 
   sep_t parser = {
       .number = number,
+      .string = string,
       .symbol = symbol,
       .expr = expr,
       .sexpr = sexpr,
@@ -21,13 +23,16 @@ sep_t init_parser()
   mpca_lang(MPCA_LANG_DEFAULT,
             "                                       \
 number : /-?[0-9]+/ ;                               \
+string : /\"(\\\\.|[^\"])*\"/ ;                     \
 symbol : /[a-zA-Z0-9_+\\-*\\/\\\\=<>!&]+/ ;         \
 sexpr  : '(' <expr>* ')' ;                          \
 qexpr  : '{' <expr>* '}' ;                          \
-expr   : <number> | <symbol> | <sexpr> | <qexpr> ;  \
+expr   : <number> | <string> | <symbol> | <sexpr> | \
+         <qexpr> ;                                  \
 dlisp  : /^/ <expr>* /$/ ;                          \
 ",
             number,
+            string,
             symbol,
             sexpr,
             qexpr,
@@ -57,8 +62,9 @@ void parse_user_input(lenv_t *env, sep_t *parser, char *input)
 
 void cleanup_parser(sep_t *parser)
 {
-  mpc_cleanup(6,
+  mpc_cleanup(7,
               parser->number,
+              parser->string,
               parser->symbol,
               parser->sexpr,
               parser->qexpr,
