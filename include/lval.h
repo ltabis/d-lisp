@@ -52,6 +52,7 @@ typedef lval_t *(*lbuiltin)(lenv_t *, lval_t *);
 typedef enum
 {
   NUMBER,
+  STRING,
   SYMBOL,
   FUN,
   SEXPR,
@@ -65,8 +66,9 @@ typedef struct lval_s
   lval_type_t type;
 
   long number;
-  char *error;
+  char *string;
   char *symbol;
+  char *error;
 
   lbuiltin builtin;
   lenv_t *env;
@@ -87,6 +89,7 @@ struct lenv_s {
 
 lenv_t *lenv_new();
 lval_t *lval_num(long);
+lval_t *lval_string(const char *);
 lval_t *lval_sym(const char *);
 lval_t *lval_sexpr();
 lval_t *lval_qexpr();
@@ -137,6 +140,7 @@ lval_t *builtin_fn(lenv_t *, lval_t *);
 lval_t *builtin_if(lenv_t *, lval_t *);
 
 void lval_println(lval_t *);
+void lval_print_string(const lval_t *);
 char *lval_type_name(unsigned int t);
 
 lval_t *lval_clone(lval_t *);
@@ -145,3 +149,4 @@ void lval_del(lval_t *);
 void lenv_del(lenv_t *);
 
 #endif
+

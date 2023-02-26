@@ -35,6 +35,20 @@ lval_t *lval_num(long value)
     return lval;
 }
 
+lval_t *lval_string(const char *string)
+{
+    lval_t *lval = malloc(sizeof(lval_t));
+
+    if (!lval)
+        return NULL;
+
+    lval->type = STRING;
+    lval->string = strdup(string);
+
+    return lval;
+}
+
+
 // Return an lval with a given symbol.
 lval_t *lval_sym(const char *symbol)
 {
@@ -405,7 +419,8 @@ int lval_eq(lval_t *x, lval_t *y)
     // NOTE: non-exhaustive.
     switch (x->type) {
         case NUMBER: return x->number == y->number;
-        case SYMBOL: return strcmp(x->symbol, y->symbol);
+        case STRING: return strcmp(x->string, y->string) == 0;
+        case SYMBOL: return strcmp(x->symbol, y->symbol) == 0;
         case FUN:
             if (x->builtin != NULL && y->builtin != NULL) {
                 return x->builtin == y->builtin;
@@ -772,6 +787,9 @@ static void lval_print(const lval_t *lval)
     case NUMBER:
         printf("%ld", lval->number);
         break;
+    case STRING:
+        lval_print_string(lval);
+        break;
     case SYMBOL:
         printf("%s", lval->symbol);
         break;
@@ -823,11 +841,21 @@ void lval_println(lval_t *lval)
     putchar('\n');
 }
 
+void lval_print_string(const lval_t *lval)
+{
+    char *escaped = strdup(lval->string);
+    escaped = mpcf_escape(escaped);
+    printf("\"%s\"", escaped);
+    free(escaped);
+}
+
+
 char *lval_type_name(unsigned int t)
 {
   switch (t)
   {
     case NUMBER: return "Number";
+    case STRING: return "String";
     case FUN: return "Function";
     case ERROR: return "Error";
     case SYMBOL: return "Symbol";
@@ -871,6 +899,7 @@ lval_t *lval_clone(lval_t *lval)
 
     switch (new->type) {
         case NUMBER: new->number = lval->number; break;
+        case STRING: new->string = strdup(lval->string); break;
         case SYMBOL: new->symbol = strdup(lval->symbol); break;
         case ERROR: new->error = strdup(lval->error); break;
         case SEXPR:
@@ -922,6 +951,9 @@ void lval_del(lval_t *lval)
     switch (lval->type)
     {
     case NUMBER:
+        break;
+    case STRING:
+        free(lval->string);
         break;
     case SYMBOL:
         free(lval->symbol);
