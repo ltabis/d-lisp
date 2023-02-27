@@ -287,7 +287,8 @@ lval_t *lval_read_expr(const mpc_ast_t *ast, lval_type_t expr_type)
         if (is_compound_character(ast->children[i]->contents))
             continue;
 
-        if (strcmp(ast->children[i]->tag, "regex") == 0)
+        if (strcmp(ast->children[i]->tag, "regex") == 0
+            || strcmp(ast->children[i]->tag, "comment") == 0)
             continue;
 
         expr = lval_add(expr, lval_read(ast->children[i]));
