@@ -95,7 +95,7 @@ lval_t *lval_sym(const char *);
 lval_t *lval_sexpr();
 lval_t *lval_qexpr();
 lval_t *lval_fun(lbuiltin);
-lval_t *lval_lambda(lval_t *, lval_t *);
+lval_t *lval_lambda(lenv_t *, lval_t *, lval_t *);
 lval_t *lval_err(const char *, ...);
 
 lval_t *lenv_get(lenv_t *, const char *);

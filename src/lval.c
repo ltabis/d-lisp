@@ -109,7 +109,7 @@ lval_t *lval_fun(lbuiltin function)
     return lval;
 }
 
-lval_t *lval_lambda(lval_t *formals, lval_t *body)
+lval_t *lval_lambda(lenv_t *env, lval_t *formals, lval_t *body)
 {
     lval_t *lval = malloc(sizeof(lval_t));
 
@@ -118,7 +118,7 @@ lval_t *lval_lambda(lval_t *formals, lval_t *body)
 
     lval->type = FUN;
     lval->builtin = NULL;
-    lval->env = lenv_new(formals->env->parser);
+    lval->env = lenv_new(env->parser);
     lval->formals = formals;
     lval->body = body;
 
@@ -690,23 +690,21 @@ lval_t *builtin_join(lenv_t *env, lval_t *lval)
 
 lval_t *builtin_var(lenv_t *env, lval_t *lval, const char *function)
 {
-    LASSERT(lval, lval->cell[0]->type == QEXPR, "`def` function can only be applied to a Q-Expression of symbols followed by any expression");
-    LASSERT(lval, lval->cell[0]->count == lval->count - 1, "the number of variables must be the same as values when using the `def` function");
+    LASSERT(lval, lval->cell[0]->type == QEXPR, "`def / =` function can only be applied to a Q-Expression of symbols followed by any expression");
+    LASSERT(lval, lval->cell[0]->count == lval->count - 1, "the number of variables must be the same as values when using the `de / =` function");
 
     lval_t *symbols = lval->cell[0];
 
     for (size_t i = 0; i < symbols->count; ++i) {
-        LASSERT(symbols, symbols->cell[i]->type == SYMBOL, "all members of the q-expression after the `def` function must be symbols");
+        LASSERT(symbols, symbols->cell[i]->type == SYMBOL, "all members of the q-expression after the `def / =` function must be symbols");
     }
 
     for (size_t i = 0; i < symbols->count; ++i) {
 
         if (strcmp(function, "def") == 0)
-        {
             lenv_def(env, symbols->cell[i], lval->cell[i + 1]);
-        } else if (strcmp(function, "def") == 0) {
+        else if (strcmp(function, "=") == 0)
             lenv_push(env, symbols->cell[i], lval->cell[i + 1]);
-        }
     }
 
     lval_del(lval);
@@ -748,7 +746,7 @@ lval_t *builtin_lambda(lenv_t *env, lval_t *lval)
     lval_t *body = lval_pop(lval, 0);
     lval_del(lval);
 
-    return lval_lambda(formals, body);
+    return lval_lambda(env, formals, body);
 }
 
 lval_t *builtin_fn(lenv_t *env, lval_t *lval)
@@ -767,7 +765,7 @@ lval_t *builtin_fn(lenv_t *env, lval_t *lval)
     lval_t *formals = lval_pop(lval, 0);
     lval_t *name = lval_pop(formals, 0);
     lval_t *body = lval_pop(lval, 0);
-    lval_t *function = lval_lambda(formals, body);
+    lval_t *function = lval_lambda(env, formals, body);
 
     lenv_def(env, name, function);
     lval_del(lval);
@@ -800,7 +798,7 @@ lval_t *builtin_load(lenv_t *env, lval_t *lval)
 
     if (mpc_parse_contents(lval->cell[0]->string, env->parser->program, &r))
     {
-        lval_t *expr = lval_eval(env, lval_read(r.output));
+        lval_t *expr = lval_read(r.output);
         mpc_ast_delete(r.output);
 
         while (expr->count) {

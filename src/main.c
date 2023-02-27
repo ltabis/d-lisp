@@ -59,8 +59,8 @@ int main(int argc, char **argv)
 	{
 		for (unsigned int i = 1; i < argc; ++i) {
 			lval_t *script_path = lval_add(lval_sexpr(), lval_string(argv[i]));
-
 			lval_t *result = builtin_load(env, script_path);
+
 			if (result->type == ERROR)
 				lval_println(result);
 
