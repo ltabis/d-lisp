@@ -234,6 +234,7 @@ void lenv_add_builtins(lenv_t *env)
     lenv_add_builtin(env, "if", &builtin_if);
     lenv_add_builtin(env, "load", &builtin_load);
     lenv_add_builtin(env, "print", &builtin_print);
+    lenv_add_builtin(env, "error", &builtin_error);
 }
 
 
@@ -833,14 +834,29 @@ static void lval_print(const lval_t *);
 
 lval_t *builtin_print(lenv_t *env, lval_t *lval)
 {
-    for (unsigned int i = 0; i < lval->count; ++i)
+    for (unsigned int i = 0; i < lval->count; ++i) {
         lval_print(lval->cell[i]);
+        putchar(' ');
+    }
 
     putchar('\n');
     lval_del(lval);
 
     return lval_sexpr();
 }
+
+lval_t *builtin_error(lenv_t *env, lval_t *lval)
+{
+    LASSERT_NUM_PARAMS("error", lval, 1);
+    LASSERT_CHILDREN_TYPE("error", lval, 0, STRING);
+
+    lval_t *error = lval_err(lval->cell[0]->string);
+
+    lval_del(lval);
+
+    return error;
+}
+
 
 //  -------------------------------
 // | print the generated lval tree |

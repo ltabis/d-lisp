@@ -141,6 +141,7 @@ lval_t *builtin_fn(lenv_t *, lval_t *);
 lval_t *builtin_if(lenv_t *, lval_t *);
 lval_t *builtin_load(lenv_t *, lval_t *);
 lval_t *builtin_print(lenv_t *, lval_t *);
+lval_t *builtin_error(lenv_t *, lval_t *);
 
 void lval_println(lval_t *);
 void lval_print_string(const lval_t *);
