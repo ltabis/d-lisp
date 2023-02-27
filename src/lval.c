@@ -823,7 +823,7 @@ lval_t *builtin_load(lenv_t *env, lval_t *lval)
         lval_t *error = lval_err("failed to load file: %s", error_message);
 
         mpc_err_delete(r.error);
-        free(error);
+        free(error_message);
         lval_del(lval);
 
         return error;
@@ -878,7 +878,7 @@ static void lval_print(const lval_t *lval)
         printf("%s", lval->symbol);
         break;
     case ERROR:
-        printf("Error: %s.", lval->error);
+        printf("Error: %s", lval->error);
         break;
     case SEXPR:
         lval_print_expr(lval, '(', ')');
