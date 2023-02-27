@@ -5,7 +5,7 @@
 #include <string.h>
 #include <errno.h>
 #include <stdbool.h>
-#include "mpc.h"
+#include "parser.h"
 
 #define COMPOUND_CHAR_COUNT 4
 
@@ -81,13 +81,14 @@ typedef struct lval_s
 
 // Used to keep track of the variables names and their associated lval.
 struct lenv_s {
+  sep_t *parser;
   lenv_t *parent;
   size_t count;
   char **syms;
   lval_t **vals;
 };
 
-lenv_t *lenv_new();
+lenv_t *lenv_new(sep_t *);
 lval_t *lval_num(long);
 lval_t *lval_string(const char *);
 lval_t *lval_sym(const char *);
@@ -138,6 +139,7 @@ lval_t *builtin_push(lenv_t *, lval_t *);
 lval_t *builtin_lambda(lenv_t *, lval_t *);
 lval_t *builtin_fn(lenv_t *, lval_t *);
 lval_t *builtin_if(lenv_t *, lval_t *);
+lval_t *builtin_load(lenv_t *, lval_t *);
 
 void lval_println(lval_t *);
 void lval_print_string(const lval_t *);

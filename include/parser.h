@@ -1,8 +1,7 @@
-#ifndef SEP_H_
-#define SEP_H_
+#ifndef PARSER_H_
+#define PARSER_H_
 
 #include "mpc.h"
-#include "lval.h"
 
 // S-expression parser.
 typedef struct sep_s
@@ -19,9 +18,7 @@ typedef struct sep_s
 
 // Create a new d-list parser.
 sep_t init_parser();
-// Parse an input using a specific parser and print the Ast or an error.
-void parse_user_input(lenv_t *env, sep_t *parser, char *input);
 // Cleanup memory of a d-list parser.
 void cleanup_parser(sep_t *parser);
 
-#endif // SEP_H_
+#endif // PARSER_H_

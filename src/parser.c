@@ -1,5 +1,4 @@
-#include <stdio.h>
-#include "sep.h"
+#include "parser.h"
 
 sep_t init_parser()
 {
@@ -44,24 +43,6 @@ dlisp   : /^/ <expr>* /$/ ;                           \
             program);
 
   return parser;
-}
-
-void parse_user_input(lenv_t *env, sep_t *parser, char *input)
-{
-  mpc_result_t r;
-
-  if (mpc_parse("<stdin>", input, parser->program, &r))
-  {
-    lval_t *lval = lval_eval(env, lval_read(r.output));
-    lval_println(lval);
-    lval_del(lval);
-    mpc_ast_delete(r.output);
-  }
-  else
-  {
-    mpc_err_print(r.error);
-    mpc_err_delete(r.error);
-  }
 }
 
 void cleanup_parser(sep_t *parser)

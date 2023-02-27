@@ -5,7 +5,7 @@
 //  --------------
 
 // Return a new environment.
-lenv_t *lenv_new()
+lenv_t *lenv_new(sep_t *parser)
 {
     lenv_t *env = malloc(sizeof(lenv_t));
 
@@ -13,6 +13,7 @@ lenv_t *lenv_new()
     if (!env)
         return NULL;
 
+    env->parser = parser;
     env->parent = NULL;
     env->count = 0;
     env->syms = NULL;
@@ -117,7 +118,7 @@ lval_t *lval_lambda(lval_t *formals, lval_t *body)
 
     lval->type = FUN;
     lval->builtin = NULL;
-    lval->env = lenv_new();
+    lval->env = lenv_new(formals->env->parser);
     lval->formals = formals;
     lval->body = body;
 
@@ -231,6 +232,7 @@ void lenv_add_builtins(lenv_t *env)
     lenv_add_builtin(env, "\\", &builtin_lambda);
     lenv_add_builtin(env, "fn", &builtin_fn);
     lenv_add_builtin(env, "if", &builtin_if);
+    lenv_add_builtin(env, "load", &builtin_load);
 }
 
 
@@ -789,6 +791,44 @@ lval_t *builtin_if(lenv_t *env, lval_t *lval)
     return lval_eval(env, expr);
 }
 
+lval_t *builtin_load(lenv_t *env, lval_t *lval)
+{
+    LASSERT_NUM_PARAMS("load", lval, 1);
+    LASSERT_CHILDREN_TYPE("load", lval, 0, STRING);
+
+    mpc_result_t r;
+
+    if (mpc_parse_contents(lval->cell[0]->string, env->parser->program, &r))
+    {
+        lval_t *expr = lval_eval(env, lval_read(r.output));
+        mpc_ast_delete(r.output);
+
+        while (expr->count) {
+            lval_t *result = lval_eval(env, lval_pop(expr, 0));   
+
+            if (result->type == ERROR)
+              lval_println(result); 
+
+            lval_del(result);
+        }
+
+        lval_del(expr);
+        lval_del(lval);
+
+        return lval_sexpr();
+    }
+    else
+    {
+        char *error_message = mpc_err_string(r.error);
+        lval_t *error = lval_err("failed to load file: %s", error_message);
+
+        mpc_err_delete(r.error);
+        free(error);
+        lval_del(lval);
+
+        return error;
+    }
+}
 
 //  -------------------------------
 // | print the generated lval tree |
