@@ -49,11 +49,6 @@ int main(int argc, char **argv)
 
 		if (rd != OK)
 			return ERR;
-
-		cleanup_parser(&parser);
-		lenv_del(env);
-
-		return OK;
 	}
 	else
 	{
@@ -68,4 +63,8 @@ int main(int argc, char **argv)
 		}
 	}
 
+	cleanup_parser(&parser);
+	lenv_del(env);
+
+	return OK;
 }
