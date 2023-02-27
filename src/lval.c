@@ -233,6 +233,7 @@ void lenv_add_builtins(lenv_t *env)
     lenv_add_builtin(env, "fn", &builtin_fn);
     lenv_add_builtin(env, "if", &builtin_if);
     lenv_add_builtin(env, "load", &builtin_load);
+    lenv_add_builtin(env, "print", &builtin_print);
 }
 
 
@@ -826,6 +827,19 @@ lval_t *builtin_load(lenv_t *env, lval_t *lval)
 
         return error;
     }
+}
+
+static void lval_print(const lval_t *);
+
+lval_t *builtin_print(lenv_t *env, lval_t *lval)
+{
+    for (unsigned int i = 0; i < lval->count; ++i)
+        lval_print(lval->cell[i]);
+
+    putchar('\n');
+    lval_del(lval);
+
+    return lval_sexpr();
 }
 
 //  -------------------------------
