@@ -23,37 +23,49 @@ void parse_user_input(lenv_t *env, sep_t *parser, char *input)
   }
 }
 
-int main()
+int main(int argc, char **argv)
 {
     sep_t parser = init_parser();
     char input[INPUT_SIZE] = {0};
     char *rd = NULL;
     lenv_t *env = lenv_new(&parser);
 
-    lenv_add_builtins(env);
+	lenv_add_builtins(env);
 
-    fputs("d-lisp> ", stdout);
+    if (argc == 1) {
+		fputs("d-lisp> ", stdout);
 
-    while ((rd = fgets(input, INPUT_SIZE, stdin)))
-    {
+		while ((rd = fgets(input, INPUT_SIZE, stdin)))
+		{
+			if (strcmp(input, "exit\n") == 0)
+			{
+				puts("stopping d-lisp interpreter ...");
+				break;
+			}
 
-        if (strcmp(input, "exit\n") == 0)
-        {
-            puts("stopping d-lisp interpreter ...");
-            break;
-        }
+			parse_user_input(env, &parser, input);
+			fputs("d-lisp> ", stdout);
+		}
 
-        parse_user_input(env, &parser, input);
-        fputs("d-lisp> ", stdout);
-    }
+		if (rd != OK)
+			return ERR;
 
-    if (rd != OK)
-    {
-        return ERR;
-    }
+		cleanup_parser(&parser);
+		lenv_del(env);
 
-    cleanup_parser(&parser);
-    lenv_del(env);
+		return OK;
+	}
+	else
+	{
+		for (unsigned int i = 1; i < argc; ++i) {
+			lval_t *script_path = lval_add(lval_sexpr(), lval_string(argv[i]));
 
-    return OK;
+			lval_t *result = builtin_load(env, script_path);
+			if (result->type == ERROR)
+				lval_println(result);
+
+			lval_del(result);
+		}
+	}
+
 }
