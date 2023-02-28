@@ -1,0 +1,16 @@
+(fn {len l} {
+  if (== l {})
+    {0}
+    {+ 1 (len (tail l))}
+})
+
+(fn {reverse l} {
+  if (== l {})
+    {{}}
+    {join (reverse (tail l)) (head l)}
+})
+
+(def {array} { 1 2 3 4 5 })
+
+(print (len array))
+(print (reverse array))
