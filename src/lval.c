@@ -697,12 +697,10 @@ lval_t *builtin_var(lenv_t *env, lval_t *lval, const char *function)
 
     lval_t *symbols = lval->cell[0];
 
-    for (size_t i = 0; i < symbols->count; ++i) {
+    for (size_t i = 0; i < symbols->count; ++i)
         LASSERT(symbols, symbols->cell[i]->type == SYMBOL, "all members of the q-expression after the `def / =` function must be symbols");
-    }
 
     for (size_t i = 0; i < symbols->count; ++i) {
-
         if (strcmp(function, "def") == 0)
             lenv_def(env, symbols->cell[i], lval->cell[i + 1]);
         else if (strcmp(function, "=") == 0)
