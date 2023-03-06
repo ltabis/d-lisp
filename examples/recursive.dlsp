@@ -1,9 +1,12 @@
+
+;; Compute the lengh of a q-expression.
 (fn {len l} {
   if (== l {})
     {0}
     {+ 1 (len (tail l))}
 })
 
+;; Reverse the content of a q-expression.
 (fn {reverse l} {
   if (== l {})
     {{}}
