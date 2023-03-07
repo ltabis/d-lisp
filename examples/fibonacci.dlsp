@@ -1,0 +1,28 @@
+(fn {fibonacci n} {
+  if (== n 0)
+    {0}
+    {if (== n 1)
+      {1}
+      {+
+        (fibonacci (- n 1))
+        (fibonacci (- n 2))
+      }
+    }
+})
+
+(print "f0" (fibonacci 0))
+(print "f1" (fibonacci 1))
+(print "f2" (fibonacci 2))
+(print "f3" (fibonacci 3))
+(print "f4" (fibonacci 4))
+(print "f5" (fibonacci 5))
+(print "f6" (fibonacci 6))
+(print "f7" (fibonacci 7))
+(print "f8" (fibonacci 8))
+(print "f9" (fibonacci 9))
+(print "f10" (fibonacci 10))
+(print "f11" (fibonacci 11))
+(print "f12" (fibonacci 12))
+(print "f13" (fibonacci 13))
+(print "f14" (fibonacci 14))
+(print "f15" (fibonacci 15))
