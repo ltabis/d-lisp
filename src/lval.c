@@ -211,30 +211,30 @@ void lenv_add_builtin(lenv_t *env, const char *name, lbuiltin function)
 // Add all builtins function pointer to an environment.
 void lenv_add_builtins(lenv_t *env)
 {
-    lenv_add_builtin(env, "+", &builtin_op_add);
-    lenv_add_builtin(env, "-", &builtin_op_sub);
-    lenv_add_builtin(env, "/", &builtin_op_div);
-    lenv_add_builtin(env, "*", &builtin_op_mul);
-    lenv_add_builtin(env, "%", &builtin_op_mod);
-    lenv_add_builtin(env, ">", &builtin_op_greater);
-    lenv_add_builtin(env, ">=", &builtin_op_greater_equal);
-    lenv_add_builtin(env, "<", &builtin_op_lesser);
-    lenv_add_builtin(env, "<=", &builtin_op_lesser_equal);
-    lenv_add_builtin(env, "==", &builtin_cmp_eq);
-    lenv_add_builtin(env, "!=", &builtin_cmp_neq);
-    lenv_add_builtin(env, "head", &builtin_head);
-    lenv_add_builtin(env, "tail", &builtin_tail);
+    lenv_add_builtin(env, "add", &builtin_op_add);
+    lenv_add_builtin(env, "strain", &builtin_op_sub);
+    lenv_add_builtin(env, "cut", &builtin_op_div);
+    lenv_add_builtin(env, "mix", &builtin_op_mul);
+    lenv_add_builtin(env, "leftovers", &builtin_op_mod);
+    lenv_add_builtin(env, "bigger", &builtin_op_greater);
+    lenv_add_builtin(env, "bigger-or-same", &builtin_op_greater_equal);
+    lenv_add_builtin(env, "smaller", &builtin_op_lesser);
+    lenv_add_builtin(env, "smaller-or-same", &builtin_op_lesser_equal);
+    lenv_add_builtin(env, "same", &builtin_cmp_eq);
+    lenv_add_builtin(env, "not", &builtin_cmp_neq);
+    lenv_add_builtin(env, "crouton", &builtin_head);
+    lenv_add_builtin(env, "rest", &builtin_tail);
     lenv_add_builtin(env, "list", &builtin_list);
-    lenv_add_builtin(env, "eval", &builtin_eval);
-    lenv_add_builtin(env, "join", &builtin_join);
-    lenv_add_builtin(env, "def", &builtin_def);
-    lenv_add_builtin(env, "=", &builtin_push);
-    lenv_add_builtin(env, "\\", &builtin_lambda);
-    lenv_add_builtin(env, "fn", &builtin_fn);
+    lenv_add_builtin(env, "cook", &builtin_eval);
+    lenv_add_builtin(env, "assemble", &builtin_join);
+    lenv_add_builtin(env, "shelf", &builtin_def);
+    lenv_add_builtin(env, "table", &builtin_push);
+    lenv_add_builtin(env, "improv", &builtin_lambda);
+    lenv_add_builtin(env, "recipe", &builtin_fn);
     lenv_add_builtin(env, "if", &builtin_if);
-    lenv_add_builtin(env, "load", &builtin_load);
-    lenv_add_builtin(env, "print", &builtin_print);
-    lenv_add_builtin(env, "error", &builtin_error);
+    lenv_add_builtin(env, "recall", &builtin_load);
+    lenv_add_builtin(env, "say", &builtin_print);
+    lenv_add_builtin(env, "you-suck-at-cooking", &builtin_error);
 }
 
 

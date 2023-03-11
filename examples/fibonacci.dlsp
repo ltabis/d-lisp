@@ -1,28 +1,28 @@
-(fn {fibonacci n} {
-  if (== n 0)
+(recipe {fibonacci n} {
+  if (same n 0)
     {0}
-    {if (== n 1)
+    {if (same n 1)
       {1}
-      {+
-        (fibonacci (- n 1))
-        (fibonacci (- n 2))
+      {add
+        (fibonacci (strain n 1))
+        (fibonacci (strain n 2))
       }
     }
 })
 
-(print "f0" (fibonacci 0))
-(print "f1" (fibonacci 1))
-(print "f2" (fibonacci 2))
-(print "f3" (fibonacci 3))
-(print "f4" (fibonacci 4))
-(print "f5" (fibonacci 5))
-(print "f6" (fibonacci 6))
-(print "f7" (fibonacci 7))
-(print "f8" (fibonacci 8))
-(print "f9" (fibonacci 9))
-(print "f10" (fibonacci 10))
-(print "f11" (fibonacci 11))
-(print "f12" (fibonacci 12))
-(print "f13" (fibonacci 13))
-(print "f14" (fibonacci 14))
-(print "f15" (fibonacci 15))
+(say "f0" (fibonacci 0))
+(say "f1" (fibonacci 1))
+(say "f2" (fibonacci 2))
+(say "f3" (fibonacci 3))
+(say "f4" (fibonacci 4))
+(say "f5" (fibonacci 5))
+(say "f6" (fibonacci 6))
+(say "f7" (fibonacci 7))
+(say "f8" (fibonacci 8))
+(say "f9" (fibonacci 9))
+(say "f10" (fibonacci 10))
+(say "f11" (fibonacci 11))
+(say "f12" (fibonacci 12))
+(say "f13" (fibonacci 13))
+(say "f14" (fibonacci 14))
+(say "f15" (fibonacci 15))

@@ -1,5 +1,5 @@
 ; Fundamental constants
 
-(def nil {})
-(def true 1)
-(def false 0)
+(def nothing {})
+(def yeah 1)
+(def na 0)

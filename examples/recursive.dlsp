@@ -1,18 +1,18 @@
-; Compute the lengh of a q-expression.
-(fn {len l} {
-  if (== l {})
+; Compute the size of a q-expression.
+(recipe {size l} {
+  if (same l {})
     {0}
-    {+ 1 (len (tail l))}
+    {add 1 (size (rest l))}
 })
 
 ; Reverse the content of a q-expression.
-(fn {reverse l} {
-  if (== l {})
+(recipe {reverse l} {
+  if (same l {})
     {{}}
-    {join (reverse (tail l)) (head l)}
+    {assemble (reverse (rest l)) (crouton l)}
 })
 
-(def {array} { 1 2 3 4 5 })
+(shelf {array} { 1 2 3 4 5 })
 
-(print (len array))
-(print (reverse array))
+(say (size array))
+(say (reverse array))

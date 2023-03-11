@@ -1,11 +1,11 @@
-; Maps a function `f` to all elements of a list `l`.
-(fn {map f l} {
+; Applies a recipe `r` to all elements of a list `l`.
+(recipe {apply r l} {
   ; TODO: replace `{}` by the nil atom.
-  if (!= l {})
+  if (not l {})
     {
-      join
-        (list (f (eval (head l))))
-        (map f (tail l))
+      assemble
+        (list (r (cook (crouton l))))
+        (apply r (rest l))
     }
     {{}}
 })
