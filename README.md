@@ -2,6 +2,8 @@
 
 An toy implementation of a custom Lisp language using C, based on the wonderful [Build Your Own Lisp book](https://buildyourownlisp.com/), that you can buy [here](https://www.amazon.com/Build-Your-Lisp-Daniel-Holden/dp/1501006622).
 
+Time to cook.
+
 ## Build
 
 ```bash
@@ -14,7 +16,7 @@ Running the interpreter.
 
 ```bash
 ./d-lisp
-> print "Hello World!"
+> say "Hello World!"
 ```
 
 Evaluating files.
