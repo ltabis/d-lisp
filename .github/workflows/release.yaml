@@ -19,7 +19,7 @@ jobs:
         run: |
           version="${GITHUB_REF#refs/tags/}"
           echo "version=${version}" >> $GITHUB_OUTPUT
-          echo "New release version=${version}"
+          echo "new d-lisp release version=${version}"
 
   changelog:
     runs-on: ubuntu-latest
