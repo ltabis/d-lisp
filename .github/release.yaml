@@ -1,0 +1,46 @@
+name: release
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  get-release-version:
+    runs-on: ubuntu-latest
+    outputs:
+      rv: ${{ steps.get.outputs.version }}
+    steps:
+      - name: Get release version from tag
+        id: get
+        shell: bash
+        run: |
+          version="${GITHUB_REF#refs/tags/}"
+          echo "version=${version}" >> $GITHUB_OUTPUT
+          echo "New release version=${version}"
+
+  create-release:
+    needs: [get-release-version]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Generate changelog
+        id: git-cliff
+        uses: orhun/git-cliff-action@v2
+        with:
+          config: cliff.toml
+          args: --verbose --tag ${{ needs.get-release-version.outputs.rv }}
+        env:
+          OUTPUT: CHANGELOG.md
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v1
+        with:
+          body_path: ${{ steps.git-cliff.outputs.changelog }}
+          tag_name: ${{ needs.get-release-version.outputs.rv }}
+          token: ${{ secrets.GITHUB_TOKEN }}
