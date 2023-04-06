@@ -51,5 +51,6 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
-# Binary
+# Binaries
 d-lisp
+d-lisp-unit-tests
